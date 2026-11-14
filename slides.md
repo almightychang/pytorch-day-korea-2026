@@ -120,9 +120,27 @@ layout: content
 eyebrow: Host vs Device
 ---
 
-# Implicit sync
+# Implicit D2H
 
-<ImplicitSync />
+<CodeLanes scene="implicitD2h" />
+
+---
+layout: content
+eyebrow: Host vs Device
+---
+
+# D2H → H2D round trip
+
+<CodeLanes scene="implicitRoundTrip" />
+
+---
+layout: content
+eyebrow: Host vs Device
+---
+
+# Cast before H2D
+
+<CodeLanes scene="implicitH2d" />
 
 ---
 layout: content
@@ -413,3 +431,43 @@ layout: cover
   <Placeholder label="RLWRLD 채용 QR" :height="320" />
 </div>
 
+
+---
+layout: section
+section: 'A'
+---
+
+# Appendix
+
+---
+layout: content
+eyebrow: Appendix · Upstream
+---
+
+# Implicit D2H in `transformers`
+
+<div class="pull-requests">
+  <PullRequestCard repo="huggingface/transformers" :number="45396" title="Extract dynamic vision/audio tensors into standalone pure functions" merged="2026-05-13" release="v5.9.0">
+    Goal: torch.compile / export.<br>rot_pos_emb → get_vision_position_ids: one grid_thw.tolist() per call, skipped when position_ids are precomputed.
+  </PullRequestCard>
+  <PullRequestCard repo="huggingface/transformers" :number="47170" title="Optimize flash attention max seqlen computation in vision attention" merged="2026-07-21" release="v5.15.0">
+    Goal: avoid repeated device-to-host synchronization.<br>max_seqlen is computed once per encoder, not in every attention layer.
+  </PullRequestCard>
+</div>
+
+<p class="pin-note">GR00T N1.7 pins transformers==4.57.3, before both changes.</p>
+
+<style>
+.pull-requests {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.pin-note {
+  margin-top: 36px;
+  font-size: 24px;
+  color: var(--muted);
+}
+</style>
