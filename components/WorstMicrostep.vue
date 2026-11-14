@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { armByTag, timeline, worstMicrostep } from '../composables/timeline'
 
-const props = withDefaults(defineProps<{ arm?: string }>(), { arm: 'base' })
+const props = withDefaults(
+  defineProps<{ arm?: string; highlight?: string[]; sublanes?: string[]; laneHeight?: number }>(),
+  { arm: 'base', sublanes: () => ['host', 'copy'], laneHeight: 48 },
+)
 
 const worst = worstMicrostep(armByTag(props.arm))
 const idlePercent = Math.round((1 - worst.computeShare) * 100)
@@ -9,14 +12,16 @@ const deviceColour = timeline.sources.gemm.color
 </script>
 
 <template>
-  <p class="headline"><span :style="{ color: deviceColour }">DEVICE</span> {{ idlePercent }}% IDLE</p>
+  <p v-if="!highlight" class="headline"><span :style="{ color: deviceColour }">DEVICE</span> {{ idlePercent }}% IDLE</p>
   <StepTimeline
     :arm="arm"
     :ranks="[worst.rank]"
     :from-ms="worst.fromMs"
     :to-ms="worst.toMs"
-    :lane-height="48"
-    :sublanes="['host', 'copy']"
+    :lane-height="laneHeight"
+    :sublanes="sublanes"
+    :highlight="highlight"
+    :device-first="!highlight"
   />
 </template>
 

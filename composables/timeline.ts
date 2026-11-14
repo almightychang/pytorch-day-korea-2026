@@ -14,8 +14,15 @@ export const armByTag = (tag: string) => payload.arms.find((arm) => arm.tag === 
 
 const decode = (encoded: string) => Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0))
 
+const withoutLaunchBlockedByNccl = (bins: RankBins): RankBins => ({
+  ...bins,
+  launch: bins.launch.map((share, bin) => Math.round((share * (255 - bins.nccl[bin])) / 255)),
+})
+
 export const decodeRank = (arm: Arm, rank: number) =>
-  Object.fromEntries(Object.entries(arm.ranks[rank]).map(([key, text]) => [key, decode(text)])) as RankBins
+  withoutLaunchBlockedByNccl(
+    Object.fromEntries(Object.entries(arm.ranks[rank]).map(([key, text]) => [key, decode(text)])) as RankBins,
+  )
 
 const computeShare = (bins: RankBins, fromMs: number, toMs: number) => {
   const first = Math.floor(fromMs / payload.bin_ms)

@@ -49,20 +49,18 @@ eyebrow: VLA
 ---
 layout: content
 eyebrow: VLA
----
-
-# 실제로 움직이는 모습
-
-<Placeholder label="로봇 demo 영상" />
-
----
-layout: content
-eyebrow: VLA
+clicks: 1
 ---
 
 # Fine-tuning에서 real-time inference까지
 
-<Placeholder label="lifecycle 다이어그램 · 데이터 수집 → fine-tuning → real-time inference" />
+<Lifecycle :step="$clicks" />
+
+---
+layout: bleed
+---
+
+<DemoVideo src="/demo-parcel.mp4" source="https://www.youtube.com/watch?v=lnaJeQUymXE" />
 
 ---
 layout: section
@@ -102,41 +100,117 @@ eyebrow: Baseline Profile · Worst Micro-step
 <WorstMicrostep />
 
 ---
-layout: content
-eyebrow: Example
+layout: section
+section: '5'
 ---
 
-# host의 Python: forward 한가운데의 D2H
+# Analysis
 
-```py
-max_hw = int(grid_thw[:, 1:].max().item())             # D2H
-total_tokens = int(torch.prod(grid_thw, dim=1).sum().item())  # D2H
+---
+layout: content
+eyebrow: Analysis
+---
 
-for num_frames, height, width in grid_thw:
-    block_rows = torch.arange(height // merge_size, device=device)  # D2H
-    if num_frames > 1:                                 # D2H
-        coords = coords.repeat(num_frames, 1)
-```
+# Host vs Device
 
-<p class="caption">GPU에 있는 값을 Python이 읽을 때마다 GPU는 멈춘다</p>
+<WorstMicrostep :highlight="['python', 'h2d', 'd2h']" />
+
+---
+layout: content
+eyebrow: Host vs Device
+---
+
+# Implicit sync
+
+<ImplicitSync />
+
+---
+layout: content
+eyebrow: Host vs Device · Principle
+---
+
+# Why it happens
+
+<Placeholder label="principle" />
+
+---
+layout: content
+eyebrow: Analysis
+---
+
+# Kernel
+
+<WorstMicrostep :highlight="['launch', 'device']" :sublanes="['host', 'device']" :lane-height="44" />
+
+---
+layout: content
+eyebrow: Kernel · Example
+---
+
+# Example
+
+<Placeholder label="example" />
+
+---
+layout: content
+eyebrow: Kernel · Principle
+---
+
+# Why it happens
+
+<Placeholder label="principle" />
+
+---
+layout: content
+eyebrow: Analysis
+---
+
+# Rank
+
+<WorstMicrostep :highlight="['nccl']" />
+
+---
+layout: content
+eyebrow: Rank · Example
+---
+
+# Example
+
+<Placeholder label="example" />
+
+---
+layout: content
+eyebrow: Rank · Principle
+---
+
+# Why it happens
+
+<Placeholder label="principle" />
 
 ---
 layout: section
-section: '5'
+section: '6'
 ---
 
 # Architecture for Optimized Path
 
 ---
 layout: content
-eyebrow: TOC
+eyebrow: Principles
 ---
 
-# 세 가지 축
+# 세 가지 원칙
 
-- **Host-Device**: host planner, pipelining
-- **Kernel**: kernel fusion, compute shapes, dynamic input tensor
-- **Distributed**: batch routing
+<Placeholder label="host는 계획, device는 실행만 · 경계에는 명시적인 계약 · batch/vector 연산" />
+
+---
+layout: content
+eyebrow: Overview
+---
+
+# 전체 구조
+
+<Placeholder label="Collator + Host Planner → Contract · Transfer → Pure Device Kernel → Routing" />
 
 ---
 layout: content
@@ -145,11 +219,11 @@ eyebrow: Host Planner
 
 # Host는 계획하고, device는 실행만 한다
 
-<Placeholder label="Collator + Host Planner → Contract (dtype · shape · layout · device) → Model" />
+<Placeholder label="입력만으로 정해지는 metadata와 실행 계획을 host에서 미리 준비" />
 
 ---
 layout: content
-eyebrow: Pipelining
+eyebrow: Async Transfer
 clicks: 2
 ---
 
@@ -159,7 +233,7 @@ clicks: 2
 
 ---
 layout: content
-eyebrow: Kernel Rewriting
+eyebrow: Pure Device Kernel · Rewriting
 clicks: 2
 ---
 
@@ -200,7 +274,7 @@ output = output.masked_fill(pad_mask.unsqueeze(-1), 0)
 
 ---
 layout: content
-eyebrow: Kernel Fusion
+eyebrow: Pure Device Kernel · Fusion
 ---
 
 # 중간 tensor를 없앤다
@@ -218,7 +292,7 @@ Fused:    x 읽기 → 곱셈 → 덧셈 → y 저장
 
 ---
 layout: content
-eyebrow: Compute Shapes
+eyebrow: Pure Device Kernel · Compute Shapes
 ---
 
 # 채널 6개를 늘렸더니 3배 빨라졌다
@@ -234,7 +308,7 @@ hidden = int(2 / 3 * 4096 * 4)   # 10,922
 
 ---
 layout: content
-eyebrow: Dynamic Input Tensor
+eyebrow: Pure Device Kernel · Input Contract
 ---
 
 # 재컴파일을 막는 입력 계약
@@ -246,10 +320,10 @@ eyebrow: Dynamic Input Tensor
 
 ---
 layout: content
-eyebrow: Batch Routing
+eyebrow: Workload-aware Routing
 ---
 
-# 가장 느린 rank가 step time을 정한다
+# 비싼 micro-batch를 같은 micro-step에 모은다
 
 ```txt
 AS-IS   micro-step 0  [12] [ 4] [ 8] [ 5]  → 12
@@ -263,10 +337,19 @@ TO-BE   micro-step 0  [12] [11] [ 8] [ 6]  → 12
 
 ---
 layout: section
-section: '6'
+section: '7'
 ---
 
 # Results
+
+---
+layout: content
+eyebrow: Profile
+---
+
+# 단계별 profile
+
+<Placeholder label="base → #211 → #223 → #232 타임라인" />
 
 ---
 layout: content
@@ -283,16 +366,36 @@ layout: content
 eyebrow: Throughput
 ---
 
-# Throughput
+# 2.652 s → 1.214 s
 
-<Placeholder label="Base → #211 → #223 → #232 throughput 차트" />
+<Placeholder label="step period: base 2.652 → #211 1.814 → #223 1.290 → #232 1.214 s (2.188×)" />
 
 ---
 layout: content
-eyebrow: More Optimizations
+eyebrow: Reproducibility
 ---
 
-# 사내 추가 최적화 사례
+# 같은 학습인가
+
+<Placeholder label="base→#211 bitwise · #211→#223 same-math 1.024× · #223→#232 same-math 0.945× · base→#232 1.016×" />
+
+---
+layout: content
+eyebrow: Failures
+---
+
+# 채택하지 않은 시도들
+
+- 통신량을 줄였지만 collective 횟수가 늘어 더 느려진 변경
+- workload를 균등화하려다 새로운 동기화 구간을 만든 방식
+- profiler에서는 비용이 커 보였지만 wall time을 줄이지 못한 수정
+
+---
+layout: content
+eyebrow: Stability
+---
+
+# 메모리와 실행 시간을 예측 가능하게
 
 - Selective union decoding
 - jemalloc
@@ -309,3 +412,4 @@ layout: cover
   <Placeholder label="미팅 QR" :height="320" />
   <Placeholder label="RLWRLD 채용 QR" :height="320" />
 </div>
+

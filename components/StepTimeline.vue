@@ -11,6 +11,8 @@ const props = withDefaults(
     toMs?: number
     laneHeight?: number
     sublanes?: string[]
+    highlight?: string[]
+    deviceFirst?: boolean
   }>(),
   { arm: 'base', laneHeight: 14, sublanes: () => [] },
 )
@@ -40,9 +42,10 @@ const RENDER_SCALE = 3
 const TICK_STEPS_MS = [10, 25, 50, 100, 250, 500, 1000]
 const MIN_TICK_PX = 110
 const FADE_MS = 900
-const FIRST_GROUP = 'device'
+const DEVICE_GROUP = 'device'
 const OTHERS_DELAY_MS = 2000
 const TRACK: RGB = [26, 32, 40]
+const DIMMED = 0.16
 const SUBLANE_LABEL_GAP = 16
 
 const arm = armByTag(props.arm)
@@ -90,6 +93,12 @@ const height = lanesTop + lanesHeight + RULER_HEIGHT
 const laneTop = (row: number, lane: Lane) => lanesTop + row * rankPitch + lane.top
 const xAt = (ms: number) => LABEL_WIDTH + (ms - fromMs) * pxPerMs
 
+const isDimmed = (lane: Lane) =>
+  props.highlight !== undefined &&
+  !props.highlight.includes(lane.group) &&
+  !lane.sources.some((source) => props.highlight!.includes(source))
+const revealDelayMs = (lane: Lane) => (props.deviceFirst && lane.group !== DEVICE_GROUP ? OTHERS_DELAY_MS : 0)
+
 const rgb = (hex: string): RGB => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as RGB
 
 const chips = (group: Group) =>
@@ -99,7 +108,6 @@ const chips = (group: Group) =>
 
 const canvas = ref<HTMLCanvasElement>()
 const isActive = useIsSlideActive()
-const othersShown = ref(false)
 let layers: HTMLCanvasElement[] = []
 let frame = 0
 let startedAt = 0
@@ -123,7 +131,9 @@ const columnPaint = (bins: RankBins, lane: Lane, firstBin: number, lastBin: numb
       leader = key
     }
   }
-  return { colour: rgb(lane.colour ?? sourceColour(leader)), alpha: Math.min(255, total) / 255 }
+  const share = Math.min(255, total) / 255
+  const standsAlone = lane.sources.length === 1 && timeline.sources[leader].kind === 'share'
+  return { colour: rgb(lane.colour ?? sourceColour(leader)), alpha: standsAlone ? Math.sqrt(share) : share }
 }
 
 const renderLayer = (lane: Lane, rankBins: RankBins[]) => {
@@ -165,11 +175,17 @@ const drawLaneNames = (ctx: CanvasRenderingContext2D) => {
     const members = lanes.filter((lane) => lane.group === group.key)
     const centre = (laneTop(0, members[0]) + laneTop(0, members.at(-1)!) + laneHeight) / 2
     ctx.fillStyle = token('--text')
+    ctx.globalAlpha = members.every(isDimmed) ? 0.35 : 1
     ctx.fillText(group.label, 0, centre)
+    ctx.globalAlpha = 1
     ctx.fillStyle = token('--muted')
     ctx.textAlign = 'right'
     if (members.length > 1)
-      for (const lane of members) ctx.fillText(lane.label, LABEL_WIDTH - SUBLANE_LABEL_GAP, laneTop(0, lane) + laneHeight / 2)
+      for (const lane of members) {
+        ctx.globalAlpha = isDimmed(lane) ? 0.35 : 1
+        ctx.fillText(lane.label, LABEL_WIDTH - SUBLANE_LABEL_GAP, laneTop(0, lane) + laneHeight / 2)
+      }
+    ctx.globalAlpha = 1
     ctx.textAlign = 'left'
   }
 }
@@ -217,7 +233,7 @@ const drawFrame = () => {
 
   lanes.forEach((lane, index) => {
     const layer = layers[index]
-    ctx.globalAlpha = fadeIn(elapsedMs - (lane.group === FIRST_GROUP ? 0 : OTHERS_DELAY_MS))
+    ctx.globalAlpha = fadeIn(elapsedMs - revealDelayMs(lane)) * (isDimmed(lane) ? DIMMED : 1)
     ranks.forEach((_, row) =>
       ctx.drawImage(layer, 0, row * laneRows, layer.width, laneRows, LABEL_WIDTH, laneTop(row, lane), plotPx, laneHeight),
     )
@@ -227,9 +243,8 @@ const drawFrame = () => {
 
 const tick = (now: number) => {
   elapsedMs = now - startedAt
-  othersShown.value = elapsedMs >= OTHERS_DELAY_MS
   drawFrame()
-  if (elapsedMs < OTHERS_DELAY_MS + FADE_MS) frame = requestAnimationFrame(tick)
+  if (elapsedMs < FADE_MS + (props.deviceFirst ? OTHERS_DELAY_MS : 0)) frame = requestAnimationFrame(tick)
 }
 
 const play = () => {
@@ -254,12 +269,7 @@ onUnmounted(() => cancelAnimationFrame(frame))
 <template>
   <div class="legend">
     <template v-if="!hasSublanes">
-      <div
-        v-for="group in groups"
-        :key="group.key"
-        class="group"
-        :class="{ hidden: group.key !== FIRST_GROUP && !othersShown }"
-      >
+      <div v-for="group in groups" :key="group.key" class="group">
         <span class="name">{{ group.label }}</span>
         <span v-for="chip in chips(group)" :key="chip.label" class="chip">
           <i :style="{ background: chip.color }" />{{ chip.label }}
@@ -285,11 +295,6 @@ onUnmounted(() => cancelAnimationFrame(frame))
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: opacity 0.9s;
-}
-
-.group.hidden {
-  opacity: 0;
 }
 
 .aside {
