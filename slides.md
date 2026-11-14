@@ -24,17 +24,11 @@ eyebrow: About Me
 <Placeholder label="약력 · 사진" />
 
 ---
-layout: content
-eyebrow: Scope
+layout: bleed
+clicks: 1
 ---
 
-# ML 분야 중 어디를 이야기하는가
-
-<Placeholder label="직군 overview 다이어그램 · 이 발표가 다루는 영역 강조" :height="360" />
-
-- 배워갈 수 있는 것 1
-- 배워갈 수 있는 것 2
-- 배워갈 수 있는 것 3
+<ScopeFields :step="$clicks" />
 
 ---
 layout: section

@@ -142,3 +142,7 @@
   font-size: 104px;
   line-height: 1.25;
 }
+
+.page.bleed {
+  padding: 72px 72px 104px;
+}

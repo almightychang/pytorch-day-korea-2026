@@ -22,7 +22,7 @@ const computeShare = (COMPUTE.ms / total) * 100
 
 <template>
   <div v-if="bracket" class="bracket" :style="{ marginLeft: `${computeShare}%` }">
-    {{ 100 - share(COMPUTE) }}% IDLE
+    {{ 100 - share(COMPUTE) }}% WASTED
   </div>
   <div class="scale">1 step</div>
   <div class="bar">
