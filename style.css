@@ -1,0 +1,61 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg: #0c0e13;
+  --panel: #151821;
+  --text: #eceef3;
+  --muted: #8a90a0;
+  --accent: #ee4c2c;
+  --h2d: #4fb6e8;
+  --compute: #7bd88f;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.page {
+  position: relative;
+  box-sizing: border-box;
+  width: 1920px;
+  height: 1080px;
+  padding: 120px 160px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Pretendard, 'Noto Sans CJK KR', system-ui, sans-serif;
+}
+
+.page .eyebrow {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.page h1 {
+  margin: 20px 0 64px;
+  font-size: 72px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.page .caption {
+  position: absolute;
+  bottom: 120px;
+  margin: 0;
+  font-size: 34px;
+  color: var(--muted);
+}
+
+.page .slidev-code-wrapper {
+  margin: 0;
+}
+
+.page .slidev-code {
+  padding: 40px 48px !important;
+  border-radius: 16px;
+  background: var(--panel) !important;
+  font-family: var(--mono) !important;
+  font-size: 32px !important;
+  line-height: 1.55 !important;
+}
