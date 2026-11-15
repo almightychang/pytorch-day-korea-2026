@@ -159,10 +159,19 @@ eyebrow: Analysis
 
 ---
 layout: content
-eyebrow: Kernel
+eyebrow: Kernel · CPU-bound
 ---
 
-# RMSNorm: one launch per kernel
+# 2D RoPE: small kernels
+
+<CodeLanes scene="rotPosEmbLoop" />
+
+---
+layout: content
+eyebrow: Kernel · Memory-bound
+---
+
+# RMSNorm: intermediate tensors
 
 <CodeLanes scene="rmsNorm" />
 
@@ -171,13 +180,13 @@ layout: content
 eyebrow: Kernel
 ---
 
-# Vision RoPE: cast vs compute
+# Kernel bottlenecks
 
-<CodeLanes scene="visionRope" />
+<KernelCosts />
 
 ---
 layout: content
-eyebrow: Kernel
+eyebrow: Kernel · CPU-bound
 ---
 
 # How a launch works
@@ -186,7 +195,7 @@ eyebrow: Kernel
 
 ---
 layout: content
-eyebrow: Kernel
+eyebrow: Kernel · CPU-bound
 ---
 
 # Small kernels expose launch overhead
@@ -195,21 +204,21 @@ eyebrow: Kernel
 
 ---
 layout: content
-eyebrow: Kernel
----
-
-# Large kernels hide launch overhead
-
-<CodeLanes scene="textMlp" />
-
----
-layout: content
-eyebrow: Kernel
+eyebrow: Kernel · Memory-bound
 ---
 
 # Intermediate tensors
 
-<IntermediateTensors />
+<TensorTraffic />
+
+---
+layout: content
+eyebrow: Kernel · Memory-bound
+---
+
+# One fused kernel
+
+<TensorTraffic fused />
 
 ---
 layout: content
@@ -534,3 +543,12 @@ eyebrow: Appendix · Upstream
   color: var(--muted);
 }
 </style>
+
+---
+layout: content
+eyebrow: Appendix · Kernel
+---
+
+# Vision RoPE: cast vs compute
+
+<CodeLanes scene="visionRope" />

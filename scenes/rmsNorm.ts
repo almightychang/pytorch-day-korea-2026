@@ -1,5 +1,7 @@
 import { scene } from '../composables/codeLanes'
 
+const MOVES_DATA = true
+
 export default scene(
   {
     repo: 'huggingface/transformers@v4.57.3',
@@ -15,18 +17,18 @@ export default scene(
     [['return ', 'host'], ['self.weight * hidden_states.to(input_dtype)', 'device']],
   ],
   ({ python, launch }) => {
-    const kernel = (line: number, name: string) => {
-      python(line, 1)
-      launch(name, 0.6)
+    const kernel = (line: number, name: string, movesData = false) => {
+      python(line, 0.45)
+      launch(name, 1, movesData)
     }
-    python(1, 0.5)
-    kernel(2, 'cast')
+    python(1, 0.3)
+    kernel(2, 'cast', MOVES_DATA)
     kernel(3, 'pow')
     kernel(3, 'mean')
     kernel(4, 'add')
     kernel(4, 'rsqrt')
     kernel(4, 'mul')
-    kernel(5, 'cast')
+    kernel(5, 'cast', MOVES_DATA)
     kernel(5, 'mul')
   },
 )

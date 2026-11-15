@@ -3,7 +3,6 @@ import { laneColour } from '../composables/laneColours'
 import { idle, solid, type Bar, type Handoff, type LegendItem } from '../composables/lanes'
 
 const KERNELS = ['A', 'B', 'C', 'D', 'E']
-const BASELINE_LAUNCHES_PER_STEP = 30047
 const LAUNCH_UNITS = 2
 const KERNEL_UNITS = 0.8
 const HANDOFF_UNITS = 0.15
@@ -40,10 +39,6 @@ const legend: LegendItem[] = [
     <LaneChart :rows="rows" :total-units="totalUnits" :handoffs="handoffs" />
     <LaneLegend :items="legend" />
     <p class="point">The device runs one kernel per launch, then waits for the next launch.</p>
-    <p class="count">
-      <b>{{ BASELINE_LAUNCHES_PER_STEP.toLocaleString('en-US') }}</b> kernel launches per step
-      <span>Measured baseline · per rank, NCCL excluded · 1 step = 2 micro-steps</span>
-    </p>
   </div>
   <SourceNote
     site="pytorch"
@@ -55,25 +50,7 @@ const legend: LegendItem[] = [
 
 <style scoped>
 .launch-overhead {
-  margin-top: 72px;
-}
-
-.count {
-  margin: 44px 0 0;
-  font-size: 30px;
-  color: var(--text);
-}
-
-.count b {
-  font-size: 72px;
-  font-weight: 800;
-}
-
-.count span {
-  display: block;
-  margin-top: 6px;
-  font-size: 22px;
-  color: var(--muted);
+  margin-top: 150px;
 }
 
 .point {

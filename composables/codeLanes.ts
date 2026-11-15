@@ -4,21 +4,28 @@ export type Side = 'host' | 'device' | 'd2h' | 'h2d' | 'comment'
 export type Piece = [text: string, side: Side]
 export type HostSpan = Span & { line: number; state: 'python' | 'wait' }
 export type CopySpan = Span & { kind: 'd2h' | 'h2d' }
+export type KernelSpan = Span & { movesData?: boolean }
 export type Excerpt = { path: string; code: string }
-export type Source = { repo: string; users: string; path?: string; symbol?: string; excerpts?: Excerpt[] }
+export type Source = {
+  repo: string
+  users: string
+  path?: string
+  symbol?: string
+  excerpts?: Excerpt[]
+}
 
 export type Scene = {
   source: Source
   code: Piece[][]
   host: HostSpan[]
-  kernels: Span[]
+  kernels: KernelSpan[]
   copies: CopySpan[]
   totalUnits: number
 }
 
 type Stage = {
   python: (line: number, units: number, label?: string) => void
-  launch: (name: string, units: number) => void
+  launch: (name: string, units: number, movesData?: boolean) => void
   d2h: (line: number) => void
   h2d: (line: number, units: number) => void
 }
@@ -27,7 +34,7 @@ const D2H_UNITS = 0.4
 
 export const scene = (source: Source, code: Piece[][], script: (stage: Stage) => void): Scene => {
   const host: HostSpan[] = []
-  const kernels: Span[] = []
+  const kernels: KernelSpan[] = []
   const copies: CopySpan[] = []
   let hostClock = 0
   let deviceFreeAt = 0
@@ -42,9 +49,9 @@ export const scene = (source: Source, code: Piece[][], script: (stage: Stage) =>
       host.push({ line, state: 'python', start: hostClock, end: hostClock + units, label })
       hostClock += units
     },
-    launch(name, units) {
+    launch(name, units, movesData) {
       const start = Math.max(hostClock, deviceFreeAt)
-      kernels.push({ label: name, start, end: start + units })
+      kernels.push({ label: name, start, end: start + units, movesData })
       deviceFreeAt = start + units
     },
     d2h(line) {
