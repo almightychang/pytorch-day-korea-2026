@@ -1,11 +1,11 @@
 <script setup lang="ts">
-defineProps<{ src: string; caption: string }>()
+defineProps<{ src: string; caption?: string; padded?: boolean }>()
 </script>
 
 <template>
   <figure>
-    <figcaption>{{ caption }}</figcaption>
-    <img :src="src" />
+    <figcaption v-if="caption">{{ caption }}</figcaption>
+    <img :src="src" :class="{ padded }" />
   </figure>
 </template>
 
@@ -23,7 +23,13 @@ figcaption {
 
 img {
   display: block;
+  box-sizing: border-box;
   width: 100%;
   border-radius: 12px;
+  background: #fff;
+}
+
+.padded {
+  padding: 28px 36px;
 }
 </style>

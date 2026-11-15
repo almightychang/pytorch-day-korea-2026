@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { Piece, Source } from '../composables/codeLanes'
 import { laneColour } from '../composables/laneColours'
 
 const ALIGNMENT = 8
@@ -7,16 +6,7 @@ const CHANNELS = 10922
 const BAR_PX_PER_MS = 280
 const SHOWN_BLOCKS = 3
 
-const SOURCE: Source = {
-  repo: 'facebookresearch/dinov2@81b2b64',
-  path: 'dinov2/layers/swiglu_ffn.py#L27-L28',
-  symbol: 'SwiGLUFFN.__init__',
-  users: 'used by LightningDiT, RLDX-1',
-}
-const CODE: Piece[][] = [
-  [['self.w12 = nn.Linear(in_features, 2 * ', 'plain'], ['hidden_features', 'shape'], [', bias=bias)', 'plain']],
-  [['self.w3 = nn.Linear(', 'plain'], ['hidden_features', 'shape'], [', out_features, bias=bias)', 'plain']],
-]
+const ORIGIN = 'SwiGLUFFN · facebookresearch/dinov2 · used by LightningDiT, RLDX-1'
 
 const blocks = Math.floor(CHANNELS / ALIGNMENT)
 const remainder = CHANNELS % ALIGNMENT
@@ -28,8 +18,7 @@ const KERNELS = [
 </script>
 
 <template>
-  <CodeSnippet :source="SOURCE" :code="CODE" />
-
+  <p class="origin">{{ ORIGIN }}</p>
   <div class="shape">
     <p class="size">
       <span>hidden_features =</span> <b>{{ channels }}</b>
@@ -42,27 +31,42 @@ const KERNELS = [
     </div>
   </div>
 
+  <p class="measured">GEMM time on H200</p>
   <div v-for="kernel in KERNELS" :key="kernel.name" class="kernel" :class="{ selected: kernel.selected }">
     <span class="name">{{ kernel.name }}</span>
     <span class="bar" :style="{ width: `${BAR_PX_PER_MS * kernel.ms}px` }" />
     <span class="time">{{ kernel.ms.toFixed(2) }} ms</span>
   </div>
 
-  <p class="foot">Measured GEMM time of <code>w3</code> forward · 8,384 tokens · bf16 · isolated on H200.</p>
-  <SourceNote
+  <SourceQuote
+    class="source"
     site="nvidia"
     title="Matrix Multiplication Background User’s Guide"
-    detail="“matrix dimensions would need to be multiples of 8 elements” (FP16)"
+    detail="FP16"
     href="https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
-  />
+  >
+    matrix dimensions would need to be multiples of 8 elements
+  </SourceQuote>
 </template>
 
 <style scoped>
+.origin,
+.measured {
+  margin: 72px 0 20px;
+  font-family: var(--mono);
+  font-size: 20px;
+  color: var(--muted);
+}
+
+.measured {
+  margin-top: 0;
+}
+
 .shape {
   display: flex;
   align-items: center;
   gap: 56px;
-  margin-bottom: 76px;
+  margin-bottom: 88px;
 }
 
 .size {
@@ -140,13 +144,7 @@ const KERNELS = [
   opacity: 1;
 }
 
-.foot {
-  margin: 28px 0 0;
-  font-size: 22px;
-  color: var(--muted);
-}
-
-.foot code {
-  font-family: var(--mono);
+.source {
+  margin-top: 104px;
 }
 </style>

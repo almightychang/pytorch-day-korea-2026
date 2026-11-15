@@ -35,16 +35,16 @@ const legend: LegendItem[] = [
     <LaneChart :rows="rows" :total-units="totalUnits" :handoffs="handoffs" :handoff-gap="HANDOFF_GAP_PX" />
     <LaneLegend :items="legend" />
   </div>
-  <blockquote>
-    “A stream operates like a work-queue into which programs can add operations, such as memory copies or kernel
-    launches, to be executed in order.”
-  </blockquote>
-  <SourceNote
+  <SourceQuote
+    class="source"
     site="nvidia"
     title="CUDA Programming Guide"
     detail="2.5 Asynchronous Execution, figure redrawn"
     href="https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/asynchronous-execution.html"
-  />
+  >
+    A stream operates like a work-queue into which programs can add operations, such as memory copies or kernel
+    launches, to be executed in order.
+  </SourceQuote>
 </template>
 
 <style scoped>
@@ -52,12 +52,7 @@ const legend: LegendItem[] = [
   margin-top: 72px;
 }
 
-blockquote {
-  margin: 64px 0 0;
-  padding-left: 24px;
-  border-left: 4px solid #8a90a066;
-  font-size: 28px;
-  line-height: 1.5;
-  color: var(--text);
+.source {
+  margin-top: 112px;
 }
 </style>

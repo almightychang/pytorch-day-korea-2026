@@ -1,9 +1,7 @@
 <script setup lang="ts">
-defineProps<{ step: number }>()
-
 const STAGES = [
   { name: 'Data Collection', detail: 'Sim / real teleop' },
-  { name: 'Training', detail: 'Fine-tuning', inScope: true },
+  { name: 'Training', detail: 'Fine-tuning' },
   { name: 'Rollout', detail: 'Real-time inference' },
 ]
 </script>
@@ -12,7 +10,7 @@ const STAGES = [
   <div class="lifecycle">
     <template v-for="(stage, index) in STAGES" :key="stage.name">
       <div v-if="index > 0" class="arrow">→</div>
-      <div class="stage" :class="{ focus: step >= 1 && stage.inScope, dim: step >= 1 && !stage.inScope }">
+      <div class="stage">
         {{ stage.name }}
         <small>{{ stage.detail }}</small>
       </div>
@@ -40,7 +38,6 @@ const STAGES = [
   font-size: 46px;
   font-weight: 800;
   white-space: nowrap;
-  transition: opacity 0.5s, color 0.5s, background 0.5s;
 }
 
 .stage small {
@@ -49,19 +46,6 @@ const STAGES = [
   font-size: 28px;
   font-weight: 400;
   color: var(--muted);
-}
-
-.stage.focus {
-  background: var(--accent);
-  color: var(--bg);
-}
-
-.stage.focus small {
-  color: var(--bg);
-}
-
-.stage.dim {
-  opacity: 0.4;
 }
 
 .arrow {

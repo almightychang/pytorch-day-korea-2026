@@ -3,7 +3,6 @@ import implicitH2d from './implicitH2d'
 import implicitRoundTrip from './implicitRoundTrip'
 import rmsNorm from './rmsNorm'
 import rotPosEmbLoop from './rotPosEmbLoop'
-import visionRope from './visionRope'
 
-export const scenes = { implicitD2h, implicitRoundTrip, implicitH2d, rotPosEmbLoop, rmsNorm, visionRope }
+export const scenes = { implicitD2h, implicitRoundTrip, implicitH2d, rotPosEmbLoop, rmsNorm }
 export type SceneName = keyof typeof scenes

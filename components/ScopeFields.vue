@@ -9,8 +9,8 @@ const FIELDS: { name: string; area: string; effects?: string[] }[] = [
   { name: 'Data', area: '1 / 6 / 3 / 9' },
   { name: 'Evaluation', area: '1 / 9 / 3 / 13' },
   { name: 'ML Performance', area: '3 / 6 / 5 / 9' },
-  { name: 'Infra', area: '3 / 9 / 6 / 13', effects: ['Deeper insight into training bottlenecks'] },
-  { name: 'Serving', area: '4 / 1 / 7 / 4', effects: ['Faster inference', 'More deployment targets'] },
+  { name: 'Infra', area: '3 / 9 / 6 / 13', effects: ['Understanding bottlenecks'] },
+  { name: 'Serving', area: '4 / 1 / 7 / 4', effects: ['Faster inference', 'Edge deployment'] },
   { name: 'MLOps', area: '4 / 4 / 7 / 6' },
   { name: 'Applications', area: '5 / 6 / 7 / 9' },
   { name: 'Hardware', area: '6 / 9 / 7 / 13' },
@@ -67,15 +67,20 @@ const FIELDS: { name: string; area: string; effects?: string[] }[] = [
 }
 
 .effect {
-  margin-bottom: 20px;
-  padding-left: 18px;
-  border-left: 4px solid #8a90a066;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
   font-size: 32px;
   font-weight: 500;
   line-height: 1.35;
   color: var(--muted);
   opacity: 0;
   transition: opacity 0.6s;
+}
+
+.effect::before {
+  content: '→';
+  color: var(--accent);
 }
 
 .field.affected {

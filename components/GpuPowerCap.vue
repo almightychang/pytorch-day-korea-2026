@@ -54,10 +54,9 @@ const band = (low: Quantile, high: Quantile) => `${trace(high)} ${trace(low, [..
           <span>{{ row.field }}</span>{{ row.value }}
         </p>
       </div>
-      <DocCard site="nvidia" :title="REFERENCE.title" :href="REFERENCE.href">
-        <code>{{ REFERENCE.symbol }} = {{ REFERENCE.value }}</code>
-        <blockquote>{{ REFERENCE.text }}</blockquote>
-      </DocCard>
+      <SourceQuote class="reference" site="nvidia" :title="REFERENCE.title" :href="REFERENCE.href" :term="`${REFERENCE.symbol} = ${REFERENCE.value}`">
+        {{ REFERENCE.text }}
+      </SourceQuote>
     </aside>
   </div>
 </template>
@@ -144,22 +143,6 @@ figcaption i.bin {
   border-radius: 50%;
   background: var(--text);
 }
-
-aside code {
-  display: block;
-  margin-top: 24px;
-  font-family: var(--mono);
-  font-size: 22px;
-}
-
-blockquote {
-  margin: 14px 0 0;
-  padding-left: 20px;
-  border-left: 3px solid #8a90a0;
-  font-size: 26px;
-  line-height: 1.45;
-}
-
 .terminal {
   margin-bottom: 20px;
   padding: 22px 28px;
@@ -183,5 +166,8 @@ blockquote {
 
 .terminal .flagged {
   color: var(--text);
+}
+.reference {
+  margin-top: 36px;
 }
 </style>

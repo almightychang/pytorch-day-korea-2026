@@ -67,7 +67,6 @@
 }
 
 .page.cover,
-.page.statement,
 .page.section {
   display: flex;
   flex-direction: column;
@@ -75,14 +74,26 @@
 }
 
 .page.cover h1 {
-  margin: 0 0 56px;
+  margin: 0 0 36px;
   font-size: 104px;
 }
 
 .page.cover p {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 36px;
   color: var(--muted);
+}
+
+.page.cover p + p {
+  margin-top: 96px;
+}
+
+.page.cover .affiliation {
+  align-self: flex-start;
+  width: auto;
+  height: 30px;
+  margin-top: 28px;
+  filter: invert(1);
 }
 
 .page.section h1 {
@@ -114,12 +125,6 @@
   font-size: 0.9em;
 }
 
-.page .qr-row {
-  display: grid;
-  grid-template-columns: repeat(3, 320px);
-  gap: 64px;
-}
-
 .page .headline-stat {
   display: flex;
   align-items: baseline;
@@ -135,12 +140,6 @@
   font-size: 160px;
   line-height: 1;
   color: var(--text);
-}
-
-.page.statement h1 {
-  margin: 28px 0 0;
-  font-size: 104px;
-  line-height: 1.25;
 }
 
 .page.bleed {

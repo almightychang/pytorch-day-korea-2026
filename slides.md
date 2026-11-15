@@ -10,18 +10,11 @@ layout: cover
 
 # 오픈소스 Physical AI 모델은<br>더 빠르게 훈련할 수 있다
 
-장주철 (Joochul Chang) · RLWRLD
-
 PyTorch Day Korea 2026
 
----
-layout: content
-eyebrow: About Me
----
+장주철 (Joochul Chang) · Software Engineer
 
-# 발표자 소개
-
-<Placeholder label="약력 · 사진" />
+<img class="affiliation" src="/rlwrld-logo.png" alt="RLWRLD">
 
 ---
 layout: bleed
@@ -48,19 +41,27 @@ layout: content
 eyebrow: VLA
 ---
 
-# Vision-Language-Action 모델
+# Vision-Language-Action
 
-<Placeholder label="VLA 구조 다이어그램 · vision + language → action" />
+<FigureCard class="vla-figure" src="/gr00t-n1-overview.png" padded />
+
+<SourceNote site="arxiv" title="GR00T N1: An Open Foundation Model for Generalist Humanoid Robots" detail="Figure 2 · CC BY 4.0" href="https://arxiv.org/abs/2503.14734" />
+
+<style>
+.vla-figure {
+  width: 1120px;
+  margin: 0 auto;
+}
+</style>
 
 ---
 layout: content
 eyebrow: VLA
-clicks: 1
 ---
 
 # Fine-tuning에서 real-time inference까지
 
-<Lifecycle :step="$clicks" />
+<Lifecycle />
 
 ---
 layout: bleed
@@ -74,13 +75,6 @@ section: '4'
 ---
 
 # Problem Definition
-
----
-layout: statement
-eyebrow: Context
----
-
-# 데모와 실험은 늘어나고,<br>GPU는 한정되어 있다
 
 ---
 layout: content
@@ -398,13 +392,13 @@ layout: content
 eyebrow: Throughput
 ---
 
-# 2.19× faster
+# 2.27× faster
 
 <StepPeriod />
 
 ---
 layout: content
-eyebrow: Where the time went
+eyebrow: Profile · Before → After
 clicks: 1
 ---
 
@@ -418,8 +412,8 @@ eyebrow: Results · wandb
 # GPU utilization
 
 <div class="wandb-pair">
-  <WandbChart src="/wandb/gpu-before.png" caption="before" />
-  <WandbChart src="/wandb/gpu-after.png" caption="after" />
+  <FigureCard src="/wandb/gpu-before.png" caption="before" />
+  <FigureCard src="/wandb/gpu-after.png" caption="after" />
 </div>
 
 <style>
@@ -438,7 +432,7 @@ eyebrow: Results · wandb
 
 # Step time
 
-<WandbChart class="wandb-single" src="/wandb/step-max.png" caption="longest step · before grey, after green" />
+<FigureCard class="wandb-single" src="/wandb/step-max.png" caption="longest step · before grey, after green" />
 
 <style>
 .wandb-single {
@@ -446,6 +440,22 @@ eyebrow: Results · wandb
   margin: 28px auto 0;
 }
 </style>
+
+---
+layout: content
+eyebrow: Results
+---
+
+# Inference
+
+<InferenceLatency />
+
+---
+layout: section
+section: '8'
+---
+
+# Behind the Scenes
 
 ---
 layout: content
@@ -461,18 +471,34 @@ layout: content
 eyebrow: Behind the scenes
 ---
 
+# Sync debug mode
+
+<SyncDebugMode />
+
+---
+layout: content
+eyebrow: Behind the scenes
+---
+
 # Gradient accumulation bug
 
 <div class="single-card">
   <GithubCard repo="deepspeedai/DeepSpeed" :number="7718" title="Incorrect gradient computation in ZeRO-2 with DeepSpeed ≥ 0.17.6" state="closed" meta="2025-12-19 · fixed in v0.18.3">
     With gradient accumulation K > 1, only the last micro-batch reached the optimizer.<br>Training used 1 / K of the intended batch.
   </GithubCard>
+  <p>Pinned in GR00T N1.7, RLDX-1</p>
 </div>
 
 <style>
 .single-card {
   width: 1100px;
-  margin: 72px auto 0;
+  margin: 88px auto 0;
+}
+
+.single-card p {
+  margin: 36px 0 0;
+  font-size: 24px;
+  color: var(--muted);
 }
 </style>
 
@@ -480,13 +506,33 @@ eyebrow: Behind the scenes
 layout: cover
 ---
 
-# 감사합니다
+# Q&A
 
-<div class="qr-row">
-  <Placeholder label="LinkedIn QR" :height="320" />
-  <Placeholder label="미팅 QR" :height="320" />
-  <Placeholder label="RLWRLD 채용 QR" :height="320" />
+<div class="contact">
+  <QrCode href="https://github.com/almightychang/pytorch-day-korea-2026" />
+  <div class="links">
+    <SourceNote inline site="github" title="almightychang/pytorch-day-korea-2026" href="https://github.com/almightychang/pytorch-day-korea-2026" />
+    <SourceNote inline site="linkedin" title="almightychang" href="https://www.linkedin.com/in/almightychang" />
+  </div>
 </div>
+
+<style>
+.contact {
+  display: grid;
+  grid-template-columns: 420px auto;
+  justify-content: start;
+  align-items: center;
+  gap: 72px;
+  margin-top: 24px;
+}
+
+.links {
+  --source-size: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+</style>
 
 
 ---
@@ -528,12 +574,3 @@ eyebrow: Appendix · Upstream
   color: var(--muted);
 }
 </style>
-
----
-layout: content
-eyebrow: Appendix · Kernel
----
-
-# Vision RoPE: cast vs compute
-
-<CodeLanes scene="visionRope" />
