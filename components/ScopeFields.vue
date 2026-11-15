@@ -2,16 +2,18 @@
 defineProps<{ step: number }>()
 
 const FOCUS = 'ML Performance'
-const FIELDS = [
-  { name: 'Research', area: '1 / 1 / 4 / 6' },
-  { name: 'Data', area: '1 / 6 / 3 / 10' },
-  { name: 'Evaluation', area: '1 / 10 / 3 / 13' },
-  { name: 'ML Performance', area: '3 / 6 / 5 / 11' },
-  { name: 'Infra', area: '3 / 11 / 6 / 13' },
-  { name: 'Serving', area: '4 / 1 / 7 / 4' },
+const FOCUS_STEP = 1
+const EFFECT_STEP = 2
+const FIELDS: { name: string; area: string; effects?: string[] }[] = [
+  { name: 'Research', area: '1 / 1 / 4 / 6', effects: ['Faster iteration', 'More experiments'] },
+  { name: 'Data', area: '1 / 6 / 3 / 9' },
+  { name: 'Evaluation', area: '1 / 9 / 3 / 13' },
+  { name: 'ML Performance', area: '3 / 6 / 5 / 9' },
+  { name: 'Infra', area: '3 / 9 / 6 / 13', effects: ['Deeper insight into training bottlenecks'] },
+  { name: 'Serving', area: '4 / 1 / 7 / 4', effects: ['Faster inference', 'More deployment targets'] },
   { name: 'MLOps', area: '4 / 4 / 7 / 6' },
-  { name: 'Applications', area: '5 / 6 / 7 / 11' },
-  { name: 'Hardware', area: '6 / 11 / 7 / 13' },
+  { name: 'Applications', area: '5 / 6 / 7 / 9' },
+  { name: 'Hardware', area: '6 / 9 / 7 / 13' },
 ]
 </script>
 
@@ -21,10 +23,15 @@ const FIELDS = [
       v-for="field in FIELDS"
       :key="field.name"
       class="field"
-      :class="{ focus: step >= 1 && field.name === FOCUS, dim: step >= 1 && field.name !== FOCUS }"
+      :class="{
+        focus: step >= FOCUS_STEP && field.name === FOCUS,
+        dim: step >= FOCUS_STEP && field.name !== FOCUS && !(step >= EFFECT_STEP && field.effects),
+        affected: step >= EFFECT_STEP && field.effects,
+      }"
       :style="{ gridArea: field.area }"
     >
-      {{ field.name }}
+      <span v-for="effect in field.effects" :key="effect" class="effect">{{ effect }}</span>
+      <span class="name">{{ field.name }}</span>
     </div>
   </div>
 </template>
@@ -40,7 +47,7 @@ const FIELDS = [
 
 .field {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
   padding: 28px 32px;
   border-radius: 16px;
   background: var(--panel);
@@ -53,6 +60,30 @@ const FIELDS = [
 .field.focus {
   background: var(--accent);
   color: var(--bg);
+}
+
+.name {
+  margin-top: auto;
+}
+
+.effect {
+  margin-bottom: 20px;
+  padding-left: 18px;
+  border-left: 4px solid #8a90a066;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+
+.field.affected {
+  color: var(--text);
+}
+
+.field.affected .effect {
+  opacity: 1;
 }
 
 .field.dim {

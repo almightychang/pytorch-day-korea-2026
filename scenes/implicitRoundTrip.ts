@@ -9,7 +9,7 @@ export default scene(
     users: 'used by GR00T N1.7, RLDX',
   },
   [
-    [['for i, input_ids in enumerate(total_input_ids):', 'host']],
+    [['for i, input_ids in enumerate(', 'host'], ['total_input_ids', 'device'], ['):', 'host'], ['  # total_input_ids: CUDA tensor', 'comment']],
     [['    input_tokens = ', 'host'], ['input_ids.tolist()', 'd2h']],
     [['    if st < len(input_tokens):', 'host']],
     [['        llm_pos_ids_list.append(torch.arange(text_len).view(1, -1).expand(3, -1) + st_idx)', 'host']],

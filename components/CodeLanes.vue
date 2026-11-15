@@ -1,37 +1,23 @@
 <script setup lang="ts">
 import { useIsSlideActive } from '@slidev/client'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { Span } from '../composables/codeLanes'
-import { timeline } from '../composables/timeline'
+import { laneColour as colour } from '../composables/laneColours'
+import { sceneLegend, sceneRows } from '../composables/sceneLanes'
 import { scenes, type SceneName } from '../scenes'
 
 const props = defineProps<{ scene: SceneName }>()
 const { source, code, host, kernels, copies, totalUnits } = scenes[props.scene]
 
 const MS_PER_UNIT = 260
-const LANE_WIDTH = 1480
-const LANES = ['host', 'device', 'copy']
-const pxPerUnit = LANE_WIDTH / totalUnits
-
-const colour = {
-  python: timeline.sources.python.color,
-  kernel: timeline.sources.gemm.color,
-  d2h: timeline.sources.d2h.color,
-  h2d: timeline.sources.h2d.color,
-}
-const copyKinds = [...new Set(copies.map((copy) => copy.kind))]
+const rows = sceneRows({ host, kernels, copies })
+const legend = sceneLegend({ host, kernels, copies })
 
 const now = ref(totalUnits)
 const isActive = useIsSlideActive()
 let frame = 0
 
 const currentLine = computed(() => host.find((span) => now.value >= span.start && now.value < span.end)?.line)
-const revealed = computed(() => `inset(0 ${LANE_WIDTH - now.value * pxPerUnit}px 0 0)`)
 const finished = computed(() => now.value >= totalUnits)
-const box = (span: Span) => ({
-  left: `${span.start * pxPerUnit}px`,
-  width: `${(span.end - span.start) * pxPerUnit}px`,
-})
 
 const play = () => {
   cancelAnimationFrame(frame)
@@ -54,7 +40,10 @@ onUnmounted(() => cancelAnimationFrame(frame))
     <span>{{ source.users }}</span>
   </div>
   <div class="snippet">
-    <div v-if="source.path" class="bar">{{ source.path }}</div>
+    <div v-if="source.path" class="bar">
+      <span>{{ source.path }}</span>
+      <span v-if="source.symbol" class="symbol">{{ source.symbol }}</span>
+    </div>
     <div v-if="source.excerpts" class="bar excerpts">
       <template v-for="excerpt in source.excerpts" :key="excerpt.path">
         <span>{{ excerpt.path }}</span>
@@ -69,24 +58,8 @@ onUnmounted(() => cancelAnimationFrame(frame))
     ><span v-for="([text, side], i) in pieces" :key="i" :class="`on-${side}`">{{ text }}</span></div></pre>
   </div>
 
-  <div class="lanes">
-    <div v-for="(lane, i) in LANES" :key="lane" class="name" :class="`row-${i}`">{{ lane }}</div>
-    <div v-for="(lane, i) in LANES" :key="lane" class="track" :class="`row-${i}`" />
-    <div class="plot" :style="{ clipPath: revealed }">
-      <div v-for="(span, i) in host" :key="`h${i}`" class="span row-0" :class="span.state" :style="box(span)">
-        {{ span.label }}
-      </div>
-      <div v-for="(span, i) in kernels" :key="`k${i}`" class="span row-1 kernel" :style="box(span)">{{ span.label }}</div>
-      <div v-for="(span, i) in copies" :key="`c${i}`" class="span row-2" :class="span.kind" :style="box(span)" />
-    </div>
-  </div>
-  <div class="legend">
-    <span><i class="key-python" />python</span>
-    <span><i class="key-wait" />waiting for the GPU</span>
-    <span><i class="key-kernel" />kernel</span>
-    <span v-for="kind in copyKinds" :key="kind"><i :class="`key-${kind}`" />{{ kind }}</span>
-    <span class="note">Illustrative, not to scale</span>
-  </div>
+  <LaneChart :rows="rows" :total-units="totalUnits" :shown-units="now" />
+  <LaneLegend :items="legend" />
 </template>
 
 <style scoped>
@@ -155,6 +128,11 @@ onUnmounted(() => cancelAnimationFrame(frame))
   color: var(--muted);
 }
 
+.bar .symbol {
+  float: right;
+  color: var(--text);
+}
+
 .excerpts {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -185,132 +163,5 @@ onUnmounted(() => cancelAnimationFrame(frame))
 
 .line .on-h2d {
   background: color-mix(in srgb, v-bind('colour.h2d') var(--copy-tint), transparent);
-}
-
-.lanes {
-  position: relative;
-  height: 160px;
-}
-
-.row-0 {
-  top: 0;
-}
-
-.row-1 {
-  top: 56px;
-}
-
-.row-2 {
-  top: 112px;
-}
-
-.name {
-  position: absolute;
-  left: 0;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  font-family: var(--mono);
-  font-size: 22px;
-  color: var(--text);
-}
-
-.track,
-.plot {
-  position: absolute;
-  left: 120px;
-  width: 1480px;
-}
-
-.track {
-  height: 48px;
-  background: rgb(26, 32, 40);
-}
-
-.plot {
-  top: 0;
-  height: 160px;
-}
-
-.span {
-  position: absolute;
-  height: 48px;
-}
-
-.span.python,
-.span.kernel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  font-family: var(--mono);
-  font-size: 18px;
-  color: var(--bg);
-}
-
-.span.python {
-  box-shadow: inset -2px 0 0 var(--bg);
-  background: v-bind('colour.python');
-}
-
-.span.wait {
-  background: repeating-linear-gradient(-45deg, #8a90a040 0 8px, transparent 8px 16px);
-}
-
-.span.kernel {
-  box-shadow: inset -2px 0 0 var(--bg);
-  background: v-bind('colour.kernel');
-}
-
-.span.d2h {
-  background: v-bind('colour.d2h');
-}
-
-.span.h2d {
-  background: v-bind('colour.h2d');
-}
-
-.legend {
-  display: flex;
-  gap: 36px;
-  margin-top: 24px;
-  font-size: 22px;
-  color: var(--muted);
-}
-
-.legend span {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.legend i {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-}
-
-.legend .key-python {
-  background: v-bind('colour.python');
-}
-
-.legend .key-wait {
-  background: repeating-linear-gradient(-45deg, #8a90a080 0 4px, transparent 4px 8px);
-}
-
-.legend .key-kernel {
-  background: v-bind('colour.kernel');
-}
-
-.legend .key-d2h {
-  background: v-bind('colour.d2h');
-}
-
-.legend .key-h2d {
-  background: v-bind('colour.h2d');
-}
-
-.legend .note {
-  margin-left: auto;
 }
 </style>

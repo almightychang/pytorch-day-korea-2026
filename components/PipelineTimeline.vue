@@ -64,7 +64,7 @@ const px = (units: number) => `${units * UNIT}px`
       </div>
     </div>
 
-    <p class="note">개념도 · H2D 1u, compute 3u, batch 4개 · pinned memory + transfer stream + CUDA event</p>
+    <p class="note"><IllustrativeBadge class="badge" />H2D 1u, compute 3u, batch 4개 · pinned memory + transfer stream + CUDA event</p>
   </div>
 </template>
 
@@ -83,6 +83,10 @@ const px = (units: number) => `${units * UNIT}px`
   align-items: center;
   font-size: 30px;
   color: var(--muted);
+}
+
+.badge {
+  margin-right: 20px;
 }
 
 .track {

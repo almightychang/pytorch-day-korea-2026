@@ -9,10 +9,10 @@ export default scene(
     users: 'used by GR00T N1.7, RLDX',
   },
   [
-    [['max_hw = int(', 'host'], ['grid_thw[:, 1:].max()', 'device'], ['.item()', 'd2h'], [')', 'host']],
+    [['max_hw = int(', 'host'], ['grid_thw[:, 1:].max()', 'device'], ['.item()', 'd2h'], [')', 'host'], ['  # grid_thw: CUDA tensor', 'comment']],
     [['freq_table = ', 'host'], ['self.rotary_pos_emb(max_hw)', 'device']],
     [['total_tokens = int(', 'host'], ['torch.prod(grid_thw, dim=1).sum()', 'device'], ['.item()', 'd2h'], [')', 'host']],
-    [['for num_frames, height, width in grid_thw:', 'host']],
+    [['for num_frames, height, width in ', 'host'], ['grid_thw', 'device'], [':', 'host']],
     [['    merged_h, merged_w = ', 'host'], ['height // merge_size, width // merge_size', 'device']],
     [['    block_rows = ', 'host'], ['torch.arange(', 'device'], ['merged_h', 'd2h'], [', device=device)', 'device']],
   ],

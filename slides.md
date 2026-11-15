@@ -31,6 +31,12 @@ clicks: 1
 <ScopeFields :step="$clicks" />
 
 ---
+layout: bleed
+---
+
+<ScopeFields :step="2" />
+
+---
 layout: section
 section: '3'
 ---
@@ -144,15 +150,6 @@ eyebrow: Host vs Device
 
 ---
 layout: content
-eyebrow: Host vs Device · Principle
----
-
-# Why it happens
-
-<Placeholder label="principle" />
-
----
-layout: content
 eyebrow: Analysis
 ---
 
@@ -162,21 +159,66 @@ eyebrow: Analysis
 
 ---
 layout: content
-eyebrow: Kernel · Example
+eyebrow: Kernel
 ---
 
-# Example
+# RMSNorm: one launch per kernel
 
-<Placeholder label="example" />
+<CodeLanes scene="rmsNorm" />
 
 ---
 layout: content
-eyebrow: Kernel · Principle
+eyebrow: Kernel
 ---
 
-# Why it happens
+# Vision RoPE: cast vs compute
 
-<Placeholder label="principle" />
+<CodeLanes scene="visionRope" />
+
+---
+layout: content
+eyebrow: Kernel
+---
+
+# How a launch works
+
+<LaunchQueue />
+
+---
+layout: content
+eyebrow: Kernel
+---
+
+# Small kernels expose launch overhead
+
+<LaunchOverhead />
+
+---
+layout: content
+eyebrow: Kernel
+---
+
+# Large kernels hide launch overhead
+
+<CodeLanes scene="textMlp" />
+
+---
+layout: content
+eyebrow: Kernel
+---
+
+# Intermediate tensors
+
+<IntermediateTensors />
+
+---
+layout: content
+eyebrow: Kernel
+---
+
+# Kernel selection
+
+<KernelSelection />
 
 ---
 layout: content
@@ -229,6 +271,15 @@ eyebrow: Overview
 # 전체 구조
 
 <Placeholder label="Collator + Host Planner → Contract · Transfer → Pure Device Kernel → Routing" />
+
+---
+layout: content
+eyebrow: Host Planner
+---
+
+# Why it happens
+
+<WaitCycle />
 
 ---
 layout: content
@@ -418,6 +469,18 @@ eyebrow: Stability
 - Selective union decoding
 - jemalloc
 - `gc.freeze()`: gen-2 pause 0.33–0.93초 → 약 0.003초
+
+---
+layout: content
+eyebrow: Upstream
+---
+
+# 이 과정에서 upstream에 돌려준 것
+
+- **DeepSpeed #8364 · #8366**: ZeRO-1/2 `overlap_comm`에서 backward가 직전 bucket의 collective 뒤에 줄을 서던 문제
+- 전체 reduction stream 대기 → 재사용하는 IPG buffer의 event만 대기
+
+<p class="caption">8× H200 · ZeRO-2 · rank 도착 시차가 collective 시간을 지배할 때 특히 비싸다</p>
 
 ---
 layout: cover

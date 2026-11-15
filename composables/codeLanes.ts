@@ -1,10 +1,11 @@
+import type { Span } from './lanes'
+
 export type Side = 'host' | 'device' | 'd2h' | 'h2d' | 'comment'
 export type Piece = [text: string, side: Side]
-export type Span = { start: number; end: number; label?: string }
 export type HostSpan = Span & { line: number; state: 'python' | 'wait' }
 export type CopySpan = Span & { kind: 'd2h' | 'h2d' }
 export type Excerpt = { path: string; code: string }
-export type Source = { repo: string; users: string; path?: string; excerpts?: Excerpt[] }
+export type Source = { repo: string; users: string; path?: string; symbol?: string; excerpts?: Excerpt[] }
 
 export type Scene = {
   source: Source
