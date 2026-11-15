@@ -117,7 +117,7 @@ onUnmounted(() => cancelAnimationFrame(frame))
       </div>
       <div class="stage" :style="{ width: `${STAGE_PX}px`, height: `${TRAVEL_PX + LEVEL_PX}px` }">
         <div class="level registers">kernel · registers</div>
-        <div class="level hbm" :style="{ top: `${TRAVEL_PX}px` }">global memory (HBM)</div>
+        <div class="level hbm" :style="{ top: `${TRAVEL_PX}px` }">global memory</div>
         <span
           v-for="flight in flights"
           :key="`${flight.kernel}-${flight.tensor}-${flight.direction}`"

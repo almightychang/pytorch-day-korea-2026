@@ -1,91 +1,81 @@
 <script setup lang="ts">
+import type { Piece, Source } from '../composables/codeLanes'
 import { laneColour } from '../composables/laneColours'
 
 const ALIGNMENT = 8
-const ALIGNED_TIME_RATIO = 0.34
-const SLOW_BAR_PX = 620
+const CHANNELS = 10922
+const BAR_PX_PER_MS = 280
 const SHOWN_BLOCKS = 3
 
-const shape = (channels: number, kernel: string, timeRatio: number) => ({
-  channels,
-  blocks: Math.floor(channels / ALIGNMENT),
-  remainder: channels % ALIGNMENT,
-  kernel,
-  barPx: SLOW_BAR_PX * timeRatio,
-})
-const SHAPES = [shape(10922, 'SM80 CUTLASS align2', 1), shape(10928, 'SM90 nvjet', ALIGNED_TIME_RATIO)]
-const lastBlockCells = (remainder: number) => remainder || ALIGNMENT
-const formula = ({ blocks, remainder }: (typeof SHAPES)[number]) =>
-  `${blocks.toLocaleString('en-US')} × ${ALIGNMENT}${remainder ? ` + ${remainder}` : ''}`
+const SOURCE: Source = {
+  repo: 'facebookresearch/dinov2@81b2b64',
+  path: 'dinov2/layers/swiglu_ffn.py#L27-L28',
+  symbol: 'SwiGLUFFN.__init__',
+  users: 'used by LightningDiT, RLDX-1',
+}
+const CODE: Piece[][] = [
+  [['self.w12 = nn.Linear(in_features, 2 * ', 'plain'], ['hidden_features', 'shape'], [', bias=bias)', 'plain']],
+  [['self.w3 = nn.Linear(', 'plain'], ['hidden_features', 'shape'], [', out_features, bias=bias)', 'plain']],
+]
+
+const blocks = Math.floor(CHANNELS / ALIGNMENT)
+const remainder = CHANNELS % ALIGNMENT
+const channels = CHANNELS.toLocaleString('en-US')
+const KERNELS = [
+  { name: 'SM80 CUTLASS align2', ms: 3.219, selected: true },
+  { name: 'SM90 nvjet', ms: 0.971, selected: false },
+]
 </script>
 
 <template>
-  <p class="origin"><code>hidden = int(2 / 3 × 4096 × 4)</code> = 10,922 channels · bf16, 2 bytes each</p>
+  <CodeSnippet :source="SOURCE" :code="CODE" />
 
-  <div v-for="item in SHAPES" :key="item.channels" class="shape">
+  <div class="shape">
     <p class="size">
-      <b>{{ item.channels.toLocaleString('en-US') }}</b>
-      <span>= {{ formula(item) }}</span>
+      <span>hidden_features =</span> <b>{{ channels }}</b>
+      <span>= {{ blocks.toLocaleString('en-US') }} × {{ ALIGNMENT }} + {{ remainder }}</span>
     </p>
     <div class="blocks">
       <span v-for="block in SHOWN_BLOCKS" :key="block" class="block"><i v-for="cell in ALIGNMENT" :key="cell" class="filled" /></span>
       <span class="ellipsis">…</span>
-      <span class="block" :class="{ ragged: item.remainder }">
-        <i v-for="cell in ALIGNMENT" :key="cell" :class="{ filled: cell <= lastBlockCells(item.remainder) }" />
-      </span>
-    </div>
-    <div class="kernel">
-      <span class="bar" :style="{ width: `${item.barPx}px` }" :class="{ slow: item.remainder }" />
-      <span class="name">{{ item.kernel }}</span>
+      <span class="block ragged"><i v-for="cell in ALIGNMENT" :key="cell" :class="{ filled: cell <= remainder }" /></span>
     </div>
   </div>
 
-  <p class="foot">
-    Blocks of {{ ALIGNMENT }} channels = 16 bytes. Bar length: measured GEMM time, isolated on H200 (aligned takes 0.30–0.38×).
-  </p>
-  <p class="quote">
-    “each FP16 element is represented by 2 bytes, so matrix dimensions would need to be multiples of 8 elements”
-  </p>
+  <div v-for="kernel in KERNELS" :key="kernel.name" class="kernel" :class="{ selected: kernel.selected }">
+    <span class="name">{{ kernel.name }}</span>
+    <span class="bar" :style="{ width: `${BAR_PX_PER_MS * kernel.ms}px` }" />
+    <span class="time">{{ kernel.ms.toFixed(2) }} ms</span>
+  </div>
+
+  <p class="foot">Measured GEMM time of <code>w3</code> forward · 8,384 tokens · bf16 · isolated on H200.</p>
   <SourceNote
     site="nvidia"
     title="Matrix Multiplication Background User’s Guide"
+    detail="“matrix dimensions would need to be multiples of 8 elements” (FP16)"
     href="https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
   />
 </template>
 
 <style scoped>
-.origin {
-  margin: 48px 0 44px;
-  font-size: 26px;
-  color: var(--muted);
-}
-
-.origin code {
-  font-family: var(--mono);
-  color: var(--text);
-}
-
 .shape {
-  display: grid;
-  grid-template-columns: 330px 520px 1fr;
+  display: flex;
   align-items: center;
-  gap: 24px;
-  margin-bottom: 36px;
+  gap: 56px;
+  margin-bottom: 76px;
 }
 
 .size {
   margin: 0;
   font-family: var(--mono);
+  font-size: 24px;
+  color: var(--muted);
 }
 
 .size b {
-  display: block;
-  font-size: 44px;
-}
-
-.size span {
-  font-size: 22px;
-  color: var(--muted);
+  margin: 0 12px;
+  font-size: 40px;
+  color: var(--text);
 }
 
 .blocks {
@@ -108,7 +98,7 @@ const formula = ({ blocks, remainder }: (typeof SHAPES)[number]) =>
 
 .block i {
   width: 9px;
-  height: 36px;
+  height: 32px;
   border-radius: 2px;
   background: #8a90a033;
 }
@@ -123,38 +113,40 @@ const formula = ({ blocks, remainder }: (typeof SHAPES)[number]) =>
 }
 
 .kernel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 300px auto 1fr;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 16px;
+  font-family: var(--mono);
+  font-size: 22px;
+  color: var(--muted);
 }
 
 .bar {
   height: 40px;
   border-radius: 4px;
   background: v-bind('laneColour.kernel');
+  opacity: 0.55;
 }
 
-.bar.slow {
-  background: v-bind('laneColour.align2');
-}
-
-.name {
-  font-family: var(--mono);
-  font-size: 22px;
+.kernel .name,
+.kernel .time {
   color: var(--text);
+}
+
+.kernel.selected .bar {
+  background: v-bind('laneColour.align2');
+  opacity: 1;
 }
 
 .foot {
-  margin: 20px 0 0;
-  font-size: 24px;
-  color: var(--text);
+  margin: 28px 0 0;
+  font-size: 22px;
+  color: var(--muted);
 }
 
-.quote {
-  margin: 40px 0 0;
-  padding-left: 20px;
-  border-left: 4px solid #8a90a066;
-  font-size: 24px;
-  color: var(--muted);
+.foot code {
+  font-family: var(--mono);
 }
 </style>

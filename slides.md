@@ -222,10 +222,10 @@ eyebrow: Kernel · Memory-bound
 
 ---
 layout: content
-eyebrow: Kernel
+eyebrow: Kernel · Kernel selection
 ---
 
-# Kernel selection
+# Tensor Core alignment
 
 <KernelSelection />
 

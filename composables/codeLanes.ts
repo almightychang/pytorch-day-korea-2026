@@ -1,6 +1,6 @@
 import type { Span } from './lanes'
 
-export type Side = 'host' | 'device' | 'd2h' | 'h2d' | 'comment'
+export type Side = 'host' | 'device' | 'd2h' | 'h2d' | 'comment' | 'shape' | 'plain'
 export type Piece = [text: string, side: Side]
 export type HostSpan = Span & { line: number; state: 'python' | 'wait' }
 export type CopySpan = Span & { kind: 'd2h' | 'h2d' }
