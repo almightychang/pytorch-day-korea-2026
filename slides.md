@@ -261,157 +261,61 @@ layout: section
 section: '6'
 ---
 
-# Architecture for Optimized Path
+# Architecture
 
 ---
 layout: content
-eyebrow: Principles
+eyebrow: Architecture
 ---
 
-# 세 가지 원칙
+# Data flow: as-is
 
-<Placeholder label="host는 계획, device는 실행만 · 경계에는 명시적인 계약 · batch/vector 연산" />
-
----
-layout: content
-eyebrow: Overview
----
-
-# 전체 구조
-
-<Placeholder label="Collator + Host Planner → Contract · Transfer → Pure Device Kernel → Routing" />
+<AsIsFlow />
 
 ---
 layout: content
-eyebrow: Host Planner
+eyebrow: Architecture
 ---
 
-# Why it happens
+# Data flow: to-be
 
-<WaitCycle />
-
----
-layout: content
-eyebrow: Host Planner
----
-
-# Host는 계획하고, device는 실행만 한다
-
-<Placeholder label="입력만으로 정해지는 metadata와 실행 계획을 host에서 미리 준비" />
+<ToBeFlow />
 
 ---
 layout: content
-eyebrow: Async Transfer
-clicks: 2
+eyebrow: Architecture · Host vs Device
 ---
 
-# H2D를 compute 뒤에 숨긴다
+# Host Planner
 
-<PipelineTimeline :step="$clicks" />
-
----
-layout: content
-eyebrow: Pure Device Kernel · Rewriting
-clicks: 2
----
-
-# Sample-wise에서 batch-wise로
-
-````md magic-move {lines: false}
-```py
-selected = []
-
-for b in range(batch_size):
-    tokens = hidden[b][keep_mask[b]]
-    selected.append(tokens)
-
-output = pad_to_batch(selected)
-```
-```py {3-5}
-selected = []
-
-for b in range(batch_size):
-    tokens = hidden[b][keep_mask[b]]
-    selected.append(tokens)
-
-output = pad_to_batch(selected)
-```
-```py
-# gather_indices, pad_mask: host planner가 준비한 [B, K]
-indices = gather_indices.unsqueeze(-1).expand(
-    -1, -1, hidden.shape[-1]
-)
-
-output = hidden.gather(dim=1, index=indices)
-output = output.masked_fill(pad_mask.unsqueeze(-1), 0)
-```
-````
-
-<p class="caption" v-click="[1, 2]">sample마다 kernel을 제출하고, 결과 길이가 데이터마다 달라진다</p>
-<p class="caption" v-click="2">plan은 host가, 실행은 device가 batch 단위로</p>
+<HostPlanner />
 
 ---
 layout: content
-eyebrow: Pure Device Kernel · Fusion
+eyebrow: Architecture · Kernel
 ---
 
-# 중간 tensor를 없앤다
+# Input Contract
 
-```txt
-y = x * scale + bias
-
-Kernel 1: x 읽기 → 곱셈 → 중간 tensor 저장
-Kernel 2: 중간 tensor 읽기 → 덧셈 → y 저장
-─────────────────────────────────────────────
-Fused:    x 읽기 → 곱셈 → 덧셈 → y 저장
-```
-
-<p class="caption">torch.compile: RMSNorm · RoPE → vision block → MSAT forward 전체</p>
+<InputContract />
 
 ---
 layout: content
-eyebrow: Pure Device Kernel · Compute Shapes
+eyebrow: Architecture · Host vs Device
 ---
 
-# 채널 6개를 늘렸더니 3배 빨라졌다
+# Micro-batch prefetch
 
-```txt
-hidden = int(2 / 3 * 4096 * 4)   # 10,922
-
-기존:  [ 10,922 ]                      → SM80 CUTLASS align2
-정렬:  [ 10,922 ][ zero padding 6 ]    → SM90 nvjet
-```
-
-<p class="caption">H200 · BF16 · hidden dimension을 8의 배수로</p>
+<MicroBatchPrefetch />
 
 ---
 layout: content
-eyebrow: Pure Device Kernel · Input Contract
+eyebrow: Architecture · Rank skew
 ---
 
-# 재컴파일을 막는 입력 계약
+# Batch Routing
 
-- **stride**: compile 경계에서 `.contiguous()`
-- **max_seqlen**: batch별 정확한 값 대신 bucket 상한
-
-<Placeholder label="stride · bucket 다이어그램" :height="360" />
-
----
-layout: content
-eyebrow: Workload-aware Routing
----
-
-# 비싼 micro-batch를 같은 micro-step에 모은다
-
-```txt
-AS-IS   micro-step 0  [12] [ 4] [ 8] [ 5]  → 12
-        micro-step 1  [ 3] [11] [ 4] [ 6]  → 11     critical path 23
-
-TO-BE   micro-step 0  [12] [11] [ 8] [ 6]  → 12
-        micro-step 1  [ 5] [ 4] [ 4] [ 3]  →  5     critical path 17
-```
-
-<p class="caption">cost 추정 → All-Gather → node-local A2A routing</p>
+<BatchRouting />
 
 ---
 layout: section
@@ -478,18 +382,6 @@ eyebrow: Stability
 - Selective union decoding
 - jemalloc
 - `gc.freeze()`: gen-2 pause 0.33–0.93초 → 약 0.003초
-
----
-layout: content
-eyebrow: Upstream
----
-
-# 이 과정에서 upstream에 돌려준 것
-
-- **DeepSpeed #8364 · #8366**: ZeRO-1/2 `overlap_comm`에서 backward가 직전 bucket의 collective 뒤에 줄을 서던 문제
-- 전체 reduction stream 대기 → 재사용하는 IPG buffer의 event만 대기
-
-<p class="caption">8× H200 · ZeRO-2 · rank 도착 시차가 collective 시간을 지배할 때 특히 비싸다</p>
 
 ---
 layout: cover
