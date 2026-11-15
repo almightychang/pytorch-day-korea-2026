@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { laneColour } from '../composables/laneColours'
-
 const SAMPLES = [
-  { images: 3, instructionPx: 230, tokens: 14 },
-  { images: 1, instructionPx: 120, tokens: 5 },
+  { images: 3, instructionPx: 230, tokens: 14, colour: '#7fa3d1' },
+  { images: 2, instructionPx: 170, tokens: 9, colour: '#8fbf9a' },
+  { images: 1, instructionPx: 120, tokens: 5, colour: '#c9b384' },
 ]
-const RANKS = [
-  { name: 'rank 0', work: 1 },
-  { name: 'rank 6', work: 0.5 },
-]
-const FULL_WORK_PX = 250
+const [LONG, MEDIUM, SHORT] = SAMPLES
+const RANK_BATCHES = [LONG, SHORT, MEDIUM, SHORT]
+const BATCH_PX_PER_TOKEN = 20
 </script>
 
 <template>
@@ -18,8 +15,8 @@ const FULL_WORK_PX = 250
       <h3>Dataset variation</h3>
       <div class="figure">
         <div v-for="(sample, index) in SAMPLES" :key="index" class="sample">
-          <span class="images"><i v-for="image in sample.images" :key="image" /></span>
-          <span class="instruction" :style="{ width: `${sample.instructionPx}px` }" />
+          <span class="images"><i v-for="image in sample.images" :key="image" :style="{ borderColor: sample.colour }" /></span>
+          <span class="instruction" :style="{ width: `${sample.instructionPx}px`, background: sample.colour }" />
         </div>
       </div>
       <p>number of images, instruction length</p>
@@ -31,7 +28,7 @@ const FULL_WORK_PX = 250
       <h3>Token counts</h3>
       <div class="figure">
         <div v-for="(sample, index) in SAMPLES" :key="index" class="tokens">
-          <i v-for="token in sample.tokens" :key="token" />
+          <i v-for="token in sample.tokens" :key="token" :style="{ background: sample.colour }" />
         </div>
       </div>
       <p>per sample</p>
@@ -41,10 +38,10 @@ const FULL_WORK_PX = 250
 
     <section>
       <h3>Rank skew</h3>
-      <div class="figure">
-        <div v-for="rank in RANKS" :key="rank.name" class="rank">
-          <span>{{ rank.name }}</span>
-          <i :style="{ width: `${FULL_WORK_PX * rank.work}px` }" />
+      <div class="figure ranks">
+        <div v-for="(sample, rank) in RANK_BATCHES" :key="rank" class="rank">
+          <span>rank {{ rank }}</span>
+          <i :style="{ width: `${sample.tokens * BATCH_PX_PER_TOKEN}px`, background: sample.colour }" />
         </div>
       </div>
       <p>in the same micro-step</p>
@@ -115,14 +112,13 @@ section p {
 .images i {
   width: 40px;
   height: 40px;
-  border: 3px solid #8a90a0;
+  border: 3px solid;
   border-radius: 6px;
 }
 
 .instruction {
   height: 14px;
   border-radius: 7px;
-  background: #8a90a066;
 }
 
 .tokens {
@@ -133,11 +129,10 @@ section p {
   width: 22px;
   height: 40px;
   border-radius: 4px;
-  background: #8a90a0;
 }
 
 .rank {
-  gap: 20px;
+  gap: 4px;
   font-family: var(--mono);
   font-size: 22px;
   color: var(--muted);
@@ -146,7 +141,19 @@ section p {
 .rank i {
   height: 40px;
   border-radius: 4px;
-  background: v-bind('laneColour.kernel');
+}
+
+.ranks {
+  gap: 14px;
+}
+
+.rank span {
+  width: 108px;
+}
+
+.rank i {
+  height: 34px;
+  border-radius: 4px;
 }
 
 .badge {

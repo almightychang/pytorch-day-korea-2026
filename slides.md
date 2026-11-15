@@ -313,9 +313,19 @@ layout: content
 eyebrow: Architecture · Rank skew
 ---
 
+# Cost function
+
+<CostFunction />
+
+---
+layout: content
+eyebrow: Architecture · Rank skew
+clicks: 1
+---
+
 # Batch Routing
 
-<BatchRouting />
+<BatchRouting :step="$clicks" />
 
 ---
 layout: content
