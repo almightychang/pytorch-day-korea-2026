@@ -234,27 +234,27 @@ layout: content
 eyebrow: Analysis
 ---
 
-# Rank
+# Rank skew
 
 <WorstMicrostep :highlight="['nccl']" />
 
 ---
 layout: content
-eyebrow: Rank · Example
+eyebrow: Rank skew · Pretraining
 ---
 
-# Example
+# Waiting for the slowest rank
 
-<Placeholder label="example" />
+<RankSkew />
 
 ---
 layout: content
-eyebrow: Rank · Principle
+eyebrow: Rank skew · Pretraining
 ---
 
-# Why it happens
+# Why ranks get different work
 
-<Placeholder label="principle" />
+<SkewCause />
 
 ---
 layout: section

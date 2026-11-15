@@ -19,7 +19,7 @@ PyTorch Day Korea 2026 · 2026-11-21 15:40 · 30분 · Build Track
 |---|---|---|---|
 | Host vs Device | `BatchPlanner`, `AsyncDeviceTransfer` | #211 | GPU가 빈 시간 854.0 → 54.7 ms |
 | Kernel | `prepare_for_execution` | #223 | compute 1,348.9 → 896.0 ms |
-| Rank | `route_batches` | #232 | NCCL 616.0 → 252.7 ms |
+| Rank skew | `route_batches` | #232 | NCCL 616.0 → 252.7 ms |
 
 ## 장 목록
 
@@ -62,7 +62,7 @@ PyTorch Day Korea 2026 · 2026-11-21 15:40 · 30분 · Build Track
 | 21 | | 원리: Launch overhead | 완료 |
 | 22 | | 원리: Intermediate tensors (8번 vs 4번) | 완료 |
 | 23 | | 원리: Kernel selection (10,922 vs 10,928) | 완료 |
-| 24 | Rank | 주제 표지 | 완료 |
+| 24 | Rank skew | 주제 표지 | 완료 |
 | 25 | | 예시: 가장 느린 rank를 나머지가 기다린다 | 빈칸 |
 | 26 | | 원리: collective는 모든 rank가 도착해야 진행한다 | 빈칸 |
 

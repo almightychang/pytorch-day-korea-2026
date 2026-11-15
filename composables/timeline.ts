@@ -3,7 +3,14 @@ import payload from '../data/timeline.json'
 export type SourceKey = keyof typeof payload.sources
 export type Arm = (typeof payload.arms)[number]
 export type RankBins = Record<SourceKey, Uint8Array>
-export type Microstep = { rank: number; index: number; fromMs: number; toMs: number; computeShare: number }
+export type Microstep = {
+  rank: number
+  index: number
+  fromMs: number
+  forwardEndMs: number
+  toMs: number
+  computeShare: number
+}
 
 const FORWARD = 'DeepSpeedEngine.forward'
 const BACKWARD = 'DeepSpeedEngine.backward'
@@ -38,9 +45,9 @@ export const microsteps = (arm: Arm): Microstep[] =>
   arm.ranks.flatMap((_, rank) => {
     const bins = decodeRank(arm, rank)
     const phases = arm.phases[rank]
-    return phases[FORWARD].map(([fromMs], index) => {
+    return phases[FORWARD].map(([fromMs, forwardEndMs], index) => {
       const toMs = phases[BACKWARD][index][1]
-      return { rank, index, fromMs, toMs, computeShare: computeShare(bins, fromMs, toMs) }
+      return { rank, index, fromMs, forwardEndMs, toMs, computeShare: computeShare(bins, fromMs, toMs) }
     })
   })
 

@@ -9,4 +9,5 @@ export const laneColour = {
   d2h: timeline.sources.d2h.color,
   d2d: timeline.sources.d2d.color,
   h2d: timeline.sources.h2d.color,
+  nccl: timeline.sources.nccl.color,
 }
