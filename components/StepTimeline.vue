@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useIsSlideActive } from '@slidev/client'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
-import { armByTag, decodeRank, type RankBins, type SourceKey, timeline } from '../composables/timeline'
+import { armByTag, decodeRank, type SourceKey, timeline } from '../composables/timeline'
+import { groupLane, laneGroups as groups, type LaneGroup as Group, renderLaneLayer, sourceColour, TRACK } from '../composables/timelineLanes'
 
 const props = withDefaults(
   defineProps<{
@@ -17,22 +18,7 @@ const props = withDefaults(
   { arm: 'base', laneHeight: 14, sublanes: () => [] },
 )
 
-type Group = { key: string; label: string; members: SourceKey[] }
 type Lane = { group: string; label: string; sources: SourceKey[]; colour?: string; top: number }
-type RGB = [number, number, number]
-
-const GROUP_ORDER = ['host', 'device', 'copy', 'nccl']
-const HIDDEN_SOURCES = ['sync']
-const groups = GROUP_ORDER.map((key) => timeline.groups.find((g) => g.key === key) as Group).map((group) => ({
-  ...group,
-  members: group.members.filter((member) => !HIDDEN_SOURCES.includes(member)),
-}))
-const RECOLOUR: Partial<Record<SourceKey, string>> = { launch: '#3fc4b4' }
-const sourceColour = (key: SourceKey) => RECOLOUR[key] ?? timeline.sources[key].color
-const GROUP_COLOUR: Record<string, { label: string; color: string }> = {
-  device: { label: 'compute', color: timeline.sources.gemm.color },
-  copy: { label: 'copy', color: timeline.sources.d2h.color },
-}
 
 const WIDTH = 1600
 const PHASE_HEIGHT = 24
@@ -44,7 +30,6 @@ const MIN_TICK_PX = 110
 const FADE_MS = 900
 const DEVICE_GROUP = 'device'
 const OTHERS_DELAY_MS = 2000
-const TRACK: RGB = [26, 32, 40]
 const DIMMED = 0.16
 const SUBLANE_LABEL_GAP = 16
 
@@ -64,7 +49,7 @@ const groupLanes = (group: Group): Omit<Lane, 'top'>[] =>
         sources: [source],
         colour: sourceColour(source),
       }))
-    : [{ group: group.key, label: group.label, sources: group.members, colour: GROUP_COLOUR[group.key]?.color }]
+    : [groupLane(group)]
 
 const lanes: Lane[] = []
 let nextTop = 0
@@ -99,13 +84,6 @@ const isDimmed = (lane: Lane) =>
   !lane.sources.some((source) => props.highlight!.includes(source))
 const revealDelayMs = (lane: Lane) => (props.deviceFirst && lane.group !== DEVICE_GROUP ? OTHERS_DELAY_MS : 0)
 
-const rgb = (hex: string): RGB => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as RGB
-
-const chips = (group: Group) =>
-  GROUP_COLOUR[group.key]
-    ? [GROUP_COLOUR[group.key]]
-    : group.members.map((key) => ({ label: timeline.sources[key].label, color: sourceColour(key) }))
-
 const canvas = ref<HTMLCanvasElement>()
 const isActive = useIsSlideActive()
 let layers: HTMLCanvasElement[] = []
@@ -114,55 +92,6 @@ let startedAt = 0
 let elapsedMs = 0
 
 const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-
-const columnPaint = (bins: RankBins, lane: Lane, firstBin: number, lastBin: number) => {
-  let total = 0
-  let leader = lane.sources[0]
-  let leaderValue = -1
-  for (const key of lane.sources) {
-    const shares = bins[key].subarray(firstBin, lastBin)
-    const value =
-      timeline.sources[key].kind === 'count'
-        ? Math.max(...shares)
-        : shares.reduce((sum, share) => sum + share, 0) / shares.length
-    total += value
-    if (value > leaderValue) {
-      leaderValue = value
-      leader = key
-    }
-  }
-  const share = Math.min(255, total) / 255
-  const standsAlone = lane.sources.length === 1 && timeline.sources[leader].kind === 'share'
-  return { colour: rgb(lane.colour ?? sourceColour(leader)), alpha: standsAlone ? Math.sqrt(share) : share }
-}
-
-const renderLayer = (lane: Lane, rankBins: RankBins[]) => {
-  const columns = Math.round(plotPx * RENDER_SCALE)
-  const laneRows = laneHeight * RENDER_SCALE
-  const surface = document.createElement('canvas')
-  surface.width = columns
-  surface.height = rankBins.length * laneRows
-  const ctx = surface.getContext('2d')!
-  const image = ctx.createImageData(columns, surface.height)
-  const firstWindowBin = fromMs / timeline.bin_ms
-  const binsPerColumn = (endMs - fromMs) / timeline.bin_ms / columns
-
-  for (let x = 0; x < columns; x++) {
-    const firstBin = Math.floor(firstWindowBin + x * binsPerColumn)
-    const lastBin = Math.min(arm.bins, Math.max(firstBin + 1, Math.ceil(firstWindowBin + (x + 1) * binsPerColumn)))
-    rankBins.forEach((bins, row) => {
-      const { colour, alpha } = columnPaint(bins, lane, firstBin, lastBin)
-      for (let y = row * laneRows; y < (row + 1) * laneRows; y++) {
-        const at = (y * columns + x) * 4
-        for (let channel = 0; channel < 3; channel++)
-          image.data[at + channel] = Math.round(TRACK[channel] + (colour[channel] - TRACK[channel]) * alpha)
-        image.data[at + 3] = 255
-      }
-    })
-  }
-  ctx.putImageData(image, 0, 0)
-  return surface
-}
 
 const drawLaneNames = (ctx: CanvasRenderingContext2D) => {
   const size = Math.max(13, Math.min(20, Math.round(laneHeight * 0.6)))
@@ -258,7 +187,9 @@ onMounted(() => {
   canvas.value!.height = height * RENDER_SCALE
   canvas.value!.getContext('2d')!.scale(RENDER_SCALE, RENDER_SCALE)
   const rankBins = ranks.map((rank) => decodeRank(arm, rank))
-  layers = lanes.map((lane) => renderLayer(lane, rankBins))
+  layers = lanes.map((lane) =>
+    renderLaneLayer(arm, lane, rankBins, { fromMs, toMs: endMs }, Math.round(plotPx * RENDER_SCALE), laneHeight * RENDER_SCALE),
+  )
   play()
 })
 
@@ -267,61 +198,11 @@ onUnmounted(() => cancelAnimationFrame(frame))
 </script>
 
 <template>
-  <div class="legend">
-    <template v-if="!hasSublanes">
-      <div v-for="group in groups" :key="group.key" class="group">
-        <span class="name">{{ group.label }}</span>
-        <span v-for="chip in chips(group)" :key="chip.label" class="chip">
-          <i :style="{ background: chip.color }" />{{ chip.label }}
-        </span>
-      </div>
-    </template>
-    <div class="aside"><slot name="legend-aside" /></div>
-  </div>
+  <TimelineLegend :chips="!hasSublanes"><slot name="legend-aside" /></TimelineLegend>
   <canvas ref="canvas" :style="{ width: `${WIDTH}px`, height: `${height}px` }" />
 </template>
 
 <style scoped>
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 40px;
-  margin: 28px 0 16px;
-  font-size: 22px;
-}
-
-.group {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.aside {
-  margin-left: auto;
-}
-
-.name {
-  font-family: var(--mono);
-  font-size: 16px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.chip i {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-}
-
 canvas {
   display: block;
 }

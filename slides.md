@@ -354,62 +354,57 @@ section: '7'
 
 ---
 layout: content
-eyebrow: Profile
----
-
-# 단계별 profile
-
-<Placeholder label="base → #211 → #223 → #232 타임라인" />
-
----
-layout: content
-eyebrow: Impact · RLDX#223
-clicks: 1
----
-
-# Rank당 step 평균
-
-<ResultBars :step="$clicks" />
-
----
-layout: content
 eyebrow: Throughput
 ---
 
-# 2.652 s → 1.214 s
+# 2.19× faster
 
-<Placeholder label="step period: base 2.652 → #211 1.814 → #223 1.290 → #232 1.214 s (2.188×)" />
-
----
-layout: content
-eyebrow: Reproducibility
----
-
-# 같은 학습인가
-
-<Placeholder label="base→#211 bitwise · #211→#223 same-math 1.024× · #223→#232 same-math 0.945× · base→#232 1.016×" />
+<StepPeriod />
 
 ---
 layout: content
-eyebrow: Failures
+eyebrow: Where the time went
+clicks: 1
 ---
 
-# 채택하지 않은 시도들
-
-- 통신량을 줄였지만 collective 횟수가 늘어 더 느려진 변경
-- workload를 균등화하려다 새로운 동기화 구간을 만든 방식
-- profiler에서는 비용이 커 보였지만 wall time을 줄이지 못한 수정
+<TimelineMorph :step="$clicks" />
 
 ---
 layout: content
-eyebrow: Stability
+eyebrow: Results · wandb
 ---
 
-# 메모리와 실행 시간을 예측 가능하게
+# GPU utilization
 
-- Selective union decoding
-- jemalloc
-- `gc.freeze()`: gen-2 pause 0.33–0.93초 → 약 0.003초
+<div class="wandb-pair">
+  <WandbChart src="/wandb/gpu-before.png" caption="before" />
+  <WandbChart src="/wandb/gpu-after.png" caption="after" />
+</div>
+
+<style>
+.wandb-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-top: 88px;
+}
+</style>
+
+---
+layout: content
+eyebrow: Results · wandb
+---
+
+# Step time
+
+<WandbChart class="wandb-single" src="/wandb/step-max.png" caption="longest step · before grey, after green" />
+
+<style>
+.wandb-single {
+  width: 1180px;
+  margin: 28px auto 0;
+}
+</style>
 
 ---
 layout: cover
