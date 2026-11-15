@@ -332,9 +332,18 @@ layout: content
 eyebrow: Architecture · Kernel
 ---
 
-# Shape buckets
+# Fixed Shapes
 
-<ShapeBuckets />
+<FixedShapes />
+
+---
+layout: content
+eyebrow: Architecture · Kernel
+---
+
+# Kernel Compilation
+
+<CompiledKernel />
 
 ---
 layout: section
