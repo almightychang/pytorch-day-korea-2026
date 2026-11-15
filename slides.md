@@ -93,6 +93,47 @@ eyebrow: Root Cause
 
 ---
 layout: content
+eyebrow: Root Cause
+---
+
+# Profiling
+
+<div class="tools">
+  <DocCard site="pytorchDocs" title="PyTorch Docs" href="https://docs.pytorch.org/docs/stable/profiler.html">
+    <h3>torch.profiler</h3>
+    <p>which operator<br>which Python line<br>how much memory</p>
+  </DocCard>
+  <DocCard site="nvidia" title="NVIDIA Developer" href="https://developer.nvidia.com/nsight-systems">
+    <h3>Nsight Systems</h3>
+    <p>what the GPU did<br>across all ranks<br>on one timeline</p>
+  </DocCard>
+</div>
+
+<style>
+.tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 80px;
+}
+
+.tools h3 {
+  margin: 40px 0 28px;
+  font-family: var(--mono);
+  font-size: 44px;
+  font-weight: 600;
+}
+
+.tools p {
+  margin: 0 0 20px;
+  font-size: 34px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+</style>
+
+---
+layout: content
 eyebrow: Baseline Profile (Nsight Systems)
 ---
 
@@ -407,6 +448,35 @@ eyebrow: Results · wandb
 </style>
 
 ---
+layout: content
+eyebrow: Behind the scenes
+---
+
+# GPU Power Cap
+
+<GpuPowerCap />
+
+---
+layout: content
+eyebrow: Behind the scenes
+---
+
+# Gradient accumulation bug
+
+<div class="single-card">
+  <GithubCard repo="deepspeedai/DeepSpeed" :number="7718" title="Incorrect gradient computation in ZeRO-2 with DeepSpeed ≥ 0.17.6" state="closed" meta="2025-12-19 · fixed in v0.18.3">
+    With gradient accumulation K > 1, only the last micro-batch reached the optimizer.<br>Training used 1 / K of the intended batch.
+  </GithubCard>
+</div>
+
+<style>
+.single-card {
+  width: 1100px;
+  margin: 72px auto 0;
+}
+</style>
+
+---
 layout: cover
 ---
 
@@ -434,12 +504,12 @@ eyebrow: Appendix · Upstream
 # Implicit D2H in `transformers`
 
 <div class="pull-requests">
-  <PullRequestCard repo="huggingface/transformers" :number="45396" title="Extract dynamic vision/audio tensors into standalone pure functions" merged="2026-05-13" release="v5.9.0">
+  <GithubCard repo="huggingface/transformers" :number="45396" title="Extract dynamic vision/audio tensors into standalone pure functions" state="merged" meta="2026-05-13 · v5.9.0">
     Goal: torch.compile / export.<br>rot_pos_emb → get_vision_position_ids: one grid_thw.tolist() per call, skipped when position_ids are precomputed.
-  </PullRequestCard>
-  <PullRequestCard repo="huggingface/transformers" :number="47170" title="Optimize flash attention max seqlen computation in vision attention" merged="2026-07-21" release="v5.15.0">
+  </GithubCard>
+  <GithubCard repo="huggingface/transformers" :number="47170" title="Optimize flash attention max seqlen computation in vision attention" state="merged" meta="2026-07-21 · v5.15.0">
     Goal: avoid repeated device-to-host synchronization.<br>max_seqlen is computed once per encoder, not in every attention layer.
-  </PullRequestCard>
+  </GithubCard>
 </div>
 
 <p class="pin-note">GR00T N1.7 pins transformers==4.57.3, before both changes.</p>
