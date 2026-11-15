@@ -304,9 +304,9 @@ layout: content
 eyebrow: Architecture · Host vs Device
 ---
 
-# Micro-batch prefetch
+# Async H2D Prefetch
 
-<MicroBatchPrefetch />
+<AsyncH2dPrefetch />
 
 ---
 layout: content
