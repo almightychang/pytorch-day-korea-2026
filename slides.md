@@ -59,7 +59,7 @@ layout: content
 eyebrow: VLA
 ---
 
-# Fine-tuning에서 real-time inference까지
+# Lifecycle
 
 <Lifecycle />
 
@@ -486,7 +486,7 @@ eyebrow: Behind the scenes
   <GithubCard repo="deepspeedai/DeepSpeed" :number="7718" title="Incorrect gradient computation in ZeRO-2 with DeepSpeed ≥ 0.17.6" state="closed" meta="2025-12-19 · fixed in v0.18.3">
     With gradient accumulation K > 1, only the last micro-batch reached the optimizer.<br>Training used 1 / K of the intended batch.
   </GithubCard>
-  <p>Pinned in GR00T N1.7, RLDX-1</p>
+  <p>Pinned in GR00T N1.7, RLDX-1.0</p>
 </div>
 
 <style>
