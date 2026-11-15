@@ -39,10 +39,9 @@ export const TO_BE = {
   lanes: STREAM_LANES,
   nodes: [
     { lane: WORKER, label: 'Host Planner', theme: 'host' },
-    { lane: WORKER, label: 'Input Contract', theme: 'host' },
     { lane: COPY_STREAM, label: 'H2D Prefetch', theme: 'host', isCopy: true },
     { lane: EXCHANGE_STREAM, label: 'Batch Routing', theme: 'rank' },
     { lane: COMPUTE_STREAM, label: 'Compiled Kernel', theme: 'kernel' },
   ] satisfies FlowNode[],
-  columnPx: 290,
+  columnPx: 365,
 }

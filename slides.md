@@ -283,21 +283,21 @@ eyebrow: Architecture
 
 ---
 layout: content
+eyebrow: Architecture
+---
+
+# Declare in Host, Execute in Device
+
+<DeclareExecute />
+
+---
+layout: content
 eyebrow: Architecture · Host vs Device
 ---
 
 # Host Planner
 
 <HostPlanner />
-
----
-layout: content
-eyebrow: Architecture · Kernel
----
-
-# Input Contract
-
-<InputContract />
 
 ---
 layout: content
@@ -316,6 +316,15 @@ eyebrow: Architecture · Rank skew
 # Batch Routing
 
 <BatchRouting />
+
+---
+layout: content
+eyebrow: Architecture · Kernel
+---
+
+# Shape buckets
+
+<ShapeBuckets />
 
 ---
 layout: section

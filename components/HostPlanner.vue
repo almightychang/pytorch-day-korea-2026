@@ -25,7 +25,7 @@ const asIs: Row[] = inOrder(sceneRows(forward)).map((row) => ({
 
 const computeStart = planUnits + H2D_UNITS
 const toBe: Row[] = inOrder([
-  { name: 'host', bars: [solid({ start: 0, end: planUnits, label: 'plan' }, laneColour.python)] },
+  { name: 'host', bars: [solid({ start: 0, end: planUnits, label: 'plan → Input Contract' }, laneColour.python)] },
   { name: 'copy', bars: [upload(planUnits)] },
   { name: 'device', bars: [solid({ start: computeStart, end: computeStart + kernelUnits, label: 'forward' }, laneColour.kernel)] },
 ])
