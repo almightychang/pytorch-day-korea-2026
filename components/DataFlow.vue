@@ -38,7 +38,6 @@ const edges = computed(() =>
       path: turns
         ? `M ${startX} ${middle(from.lane)} H ${turnX} V ${middle(to.lane)} H ${endX}`
         : `M ${startX} ${middle(from.lane)} H ${endX}`,
-      colour: copies ? COPY[sideOf(to.lane)].colour : undefined,
       tag: copies && !to.isCopy ? { ...COPY[sideOf(to.lane)], x: turnX, y: boundaryTop } : undefined,
     }
   }),
@@ -67,7 +66,7 @@ const tint = (node: FlowNode) =>
           :key="index"
           :d="edge.path"
           :marker-end="`url(#${markerId})`"
-          :style="{ stroke: edge.colour }"
+          :style="{ stroke: edge.tag?.colour }"
         />
       </svg>
       <template v-for="(edge, index) in edges" :key="index">

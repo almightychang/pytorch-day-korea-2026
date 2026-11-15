@@ -46,14 +46,3 @@ export const TO_BE = {
   ] satisfies FlowNode[],
   columnPx: 290,
 }
-
-const HOST = 'boundary'
-const DEVICE = 'model'
-export const CONTRACT_LANES: Lane[] = [
-  { side: 'host', name: HOST },
-  { side: 'device', name: DEVICE },
-]
-export const FLOW_CONTRACT: FlowNode[] = [
-  { lane: HOST, label: 'Input Contract', details: ['tensors only', 'bf16', 'contiguous stride', 'length bucket'] },
-  { lane: DEVICE, label: 'Compiled Kernel', details: ['no host values read', 'batch-wise ops', 'one region per block', 'no recompilation'] },
-]

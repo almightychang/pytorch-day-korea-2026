@@ -1,58 +1,60 @@
 <script setup lang="ts">
 import { laneColour } from '../composables/laneColours'
-import { solid, type Bar, type LegendItem } from '../composables/lanes'
+import { solid, type Bar, type LegendItem, type Row, type Span } from '../composables/lanes'
+import { sceneLegend, sceneRows } from '../composables/sceneLanes'
+import { scenes } from '../scenes'
 
-const WORKERS = 2
-const BATCHES = 6
-const STEPS = 4
-const PLAN_UNITS = 3
-const PLAN_GAP_UNITS = 0.4
-const WORKER_STAGGER_UNITS = 1.3
-const H2D_UNITS = 0.5
-const STEP_UNITS = 2.2
+const H2D_UNITS = 1.2
+const LANE_ORDER = ['host', 'copy', 'device']
 
-const planStart = (batch: number) =>
-  (batch % WORKERS) * WORKER_STAGGER_UNITS + Math.floor(batch / WORKERS) * (PLAN_UNITS + PLAN_GAP_UNITS)
-const planEnd = (batch: number) => planStart(batch) + PLAN_UNITS
-const firstStepStart = planEnd(0) + H2D_UNITS
-const totalUnits = firstStepStart + STEPS * STEP_UNITS
+const forward = scenes.implicitD2h
+const totalUnits = H2D_UNITS + forward.totalUnits
 
-const batches = Array.from({ length: BATCHES }, (_, batch) => batch)
-const plans = (worker: number): Bar[] =>
-  batches
-    .filter((batch) => batch % WORKERS === worker)
-    .map((batch) => solid({ start: planStart(batch), end: planEnd(batch), label: `plan ${batch + 1}` }, laneColour.python))
-const uploads: Bar[] = batches
-  .filter((batch) => planEnd(batch) + H2D_UNITS <= totalUnits)
-  .map((batch) => solid({ start: planEnd(batch), end: planEnd(batch) + H2D_UNITS, label: 'H2D' }, laneColour.h2d))
-const steps: Bar[] = Array.from({ length: STEPS }, (_, step) =>
-  solid(
-    { start: firstStepStart + step * STEP_UNITS, end: firstStepStart + (step + 1) * STEP_UNITS, label: `step ${step + 1}` },
-    laneColour.kernel,
-  ),
-)
+const duration = (spans: Span[]) => spans.reduce((sum, span) => sum + span.end - span.start, 0)
+const planUnits = duration(forward.host.filter((span) => span.state === 'python'))
+const kernelUnits = duration(forward.kernels)
 
-const rows = [
-  ...Array.from({ length: WORKERS }, (_, worker) => ({ name: `worker ${worker + 1}`, bars: plans(worker) })),
-  { name: 'main', bars: uploads },
-  { name: 'device', bars: steps },
-]
-const legend: LegendItem[] = [
-  { label: 'plan on the host', fill: laneColour.python },
-  { label: 'h2d', fill: laneColour.h2d },
-  { label: 'step', fill: laneColour.kernel },
-]
+const upload = (start: number): Bar => solid({ start, end: start + H2D_UNITS, label: 'H2D' }, laneColour.h2d)
+const later = (bar: Bar, units: number): Bar => ({ ...bar, start: bar.start + units, end: bar.end + units, label: undefined })
+const inOrder = (rows: Row[]) => LANE_ORDER.map((lane) => rows.find((row) => row.name === lane)!)
+
+const asIs: Row[] = inOrder(sceneRows(forward)).map((row) => ({
+  ...row,
+  bars: [...(row.name === 'copy' ? [upload(0)] : []), ...row.bars.map((bar) => later(bar, H2D_UNITS))],
+}))
+
+const computeStart = planUnits + H2D_UNITS
+const toBe: Row[] = inOrder([
+  { name: 'host', bars: [solid({ start: 0, end: planUnits, label: 'plan' }, laneColour.python)] },
+  { name: 'copy', bars: [upload(planUnits)] },
+  { name: 'device', bars: [solid({ start: computeStart, end: computeStart + kernelUnits, label: 'forward' }, laneColour.kernel)] },
+])
+
+const legend: LegendItem[] = [...sceneLegend(forward), { label: 'h2d', fill: laneColour.h2d }]
 </script>
 
 <template>
-  <div class="host-planner">
-    <LaneChart :rows="rows" :total-units="totalUnits" />
-    <LaneLegend :items="legend" />
-  </div>
+  <section>
+    <h3>as-is</h3>
+    <LaneChart :rows="asIs" :total-units="totalUnits" />
+  </section>
+  <section>
+    <h3>to-be</h3>
+    <LaneChart :rows="toBe" :total-units="totalUnits" />
+  </section>
+  <LaneLegend :items="legend" />
 </template>
 
 <style scoped>
-.host-planner {
-  margin-top: 88px;
+section {
+  margin-top: 48px;
+}
+
+h3 {
+  margin: 0 0 18px;
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--muted);
 }
 </style>
