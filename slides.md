@@ -216,7 +216,7 @@ layout: content
 eyebrow: Kernel · Memory-bound
 ---
 
-# One fused kernel
+# Kernel fusion
 
 <TensorTraffic fused />
 

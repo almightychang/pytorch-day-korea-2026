@@ -20,7 +20,6 @@ const kernels = props.fused ? FUSED : SEPARATE
 const intermediates = new Set(kernels.slice(0, -1).map((kernel) => kernel.write))
 const widestKernel = Math.max(...kernels.map((kernel) => kernel.reads.length))
 const readCount = kernels.reduce((sum, kernel) => sum + kernel.reads.length, 0)
-const title = props.fused ? '1 fused kernel' : `${kernels.length} kernels`
 
 const MOVE_MS = 850
 const COMPUTE_MS = 450
@@ -91,7 +90,7 @@ onUnmounted(() => cancelAnimationFrame(frame))
 <template>
   <div class="tensor-traffic">
     <section class="summary">
-      <h3>{{ title }}</h3>
+      <h3>{{ kernels.length }} {{ kernels.length > 1 ? 'kernels' : 'kernel' }}</h3>
       <div v-for="kernel in kernels" :key="kernel.write" class="row">
         <span class="reads">
           <span v-for="name in kernel.reads" :key="name" class="memory" :class="{ intermediate: intermediates.has(name) }">
