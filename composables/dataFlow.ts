@@ -12,7 +12,7 @@ const COMPUTE_STREAM = 'compute'
 const DEFAULT_STREAM = 'default'
 const CUDA_STREAM = 'CUDA stream'
 
-export const STREAM_LANES: Lane[] = [
+const STREAM_LANES: Lane[] = [
   { side: 'host', name: WORKER },
   { side: 'device', name: COPY_STREAM, kind: CUDA_STREAM },
   { side: 'device', name: EXCHANGE_STREAM, kind: CUDA_STREAM },

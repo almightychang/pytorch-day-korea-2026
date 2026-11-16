@@ -9,7 +9,7 @@ const HIDDEN_SOURCES = ['sync', 'd2d']
 const RECOLOUR: Partial<Record<SourceKey, string>> = { launch: '#3fc4b4' }
 
 export const TRACK: RGB = [26, 32, 40]
-export const GROUP_COLOUR: Record<string, { label: string; color: string }> = {
+const GROUP_COLOUR: Record<string, { label: string; color: string }> = {
   device: { label: 'compute', color: timeline.sources.gemm.color },
   copy: { label: 'copy', color: timeline.sources.d2h.color },
 }

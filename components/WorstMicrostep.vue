@@ -3,7 +3,7 @@ import { armByTag, timeline, worstMicrostep } from '../composables/timeline'
 
 const props = withDefaults(
   defineProps<{ arm?: string; highlight?: string[]; sublanes?: string[]; laneHeight?: number }>(),
-  { arm: 'base', sublanes: () => ['host', 'copy'], laneHeight: 48 },
+  { arm: 'before', sublanes: () => ['host', 'copy'], laneHeight: 48 },
 )
 
 const worst = worstMicrostep(armByTag(props.arm))

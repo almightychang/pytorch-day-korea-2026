@@ -21,7 +21,7 @@ const SEGMENTS_PER_MICROSTEP = 3
 
 const lanes = laneGroups.map(groupLane)
 const [forwardPhase, backwardPhase] = Object.values(timeline.phases)
-const runs = ['base', 'p232'].map((tag) => {
+const runs = ['before', 'after'].map((tag) => {
   const arm = armByTag(tag)
   const steps = microsteps(arm)
   return {
@@ -132,6 +132,7 @@ onMounted(() => {
   canvas.value!.getContext('2d')!.scale(RENDER_SCALE, RENDER_SCALE)
   layers = runs.map((run) => renderLayers(run.arm))
   draw()
+  document.fonts.ready.then(draw)
 })
 watch(() => props.step >= 1, (optimized) => animateTo(optimized ? 1 : 0))
 onUnmounted(() => cancelAnimationFrame(frame))

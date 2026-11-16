@@ -9,7 +9,7 @@ const RUNS: Run[] = [
 ]
 const PX_PER_SECOND = 420
 
-const [before, after] = ['base', 'p232'].map((tag) => deviceShare(armByTag(tag)))
+const [before, after] = ['before', 'after'].map((tag) => deviceShare(armByTag(tag)))
 const percent = (share: number) => `${Math.round(share * 100)}%`
 const SHARES = [
   { label: 'nvidia-smi · GPU util', from: before.anyKernel, to: after.anyKernel },

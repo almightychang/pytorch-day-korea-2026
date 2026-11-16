@@ -5,7 +5,7 @@ import { armByTag } from '../composables/timeline'
 
 const TICK_MS = 250
 
-const windows = mostSkewedMicrostep(armByTag('base'))
+const windows = mostSkewedMicrostep(armByTag('before'))
 const fromMs = Math.min(...windows.map((window) => window.fromMs))
 const toMs = Math.max(...windows.map((window) => window.toMs))
 const slowest = windows.reduce((slow, window) => (window.forwardEndMs > slow.forwardEndMs ? window : slow))

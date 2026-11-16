@@ -7,14 +7,10 @@
   --text: #eceef3;
   --muted: #8a90a0;
   --accent: #ee4c2c;
-  --h2d: #4fb6e8;
   --compute: #7bd88f;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
   --python: #ee4c2c;
-  --launch: #f5a524;
-  --sync: #b8563f;
   --wait: #b388ff;
-  --wire: #6b7385;
   --other: #4a5060;
 }
 
@@ -43,27 +39,6 @@
   font-weight: 800;
   line-height: 1.15;
   color: var(--text);
-}
-
-.page .caption {
-  position: absolute;
-  bottom: 120px;
-  margin: 0;
-  font-size: 34px;
-  color: var(--muted);
-}
-
-.page .slidev-code-wrapper {
-  margin: 0;
-}
-
-.page .slidev-code {
-  padding: 40px 48px !important;
-  border-radius: 16px;
-  background: var(--panel) !important;
-  font-family: var(--mono) !important;
-  font-size: 32px !important;
-  line-height: 1.55 !important;
 }
 
 .page.cover,
@@ -106,40 +81,6 @@
   font-family: var(--mono);
   font-size: 48px;
   color: var(--accent);
-}
-
-.page ul {
-  margin: 40px 0 0;
-  padding-left: 44px;
-  list-style: disc;
-  font-size: 40px;
-  line-height: 1.7;
-}
-
-.page li strong {
-  color: var(--accent);
-}
-
-.page li code {
-  font-family: var(--mono);
-  font-size: 0.9em;
-}
-
-.page .headline-stat {
-  display: flex;
-  align-items: baseline;
-  gap: 32px;
-  margin-top: 72px;
-  font-size: 96px;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.page .headline-stat b {
-  font-family: var(--mono);
-  font-size: 160px;
-  line-height: 1;
-  color: var(--text);
 }
 
 .page.bleed {

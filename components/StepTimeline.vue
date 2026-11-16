@@ -15,7 +15,7 @@ const props = withDefaults(
     highlight?: string[]
     deviceFirst?: boolean
   }>(),
-  { arm: 'base', laneHeight: 14, sublanes: () => [] },
+  { arm: 'before', laneHeight: 14, sublanes: () => [] },
 )
 
 type Lane = { group: string; label: string; sources: SourceKey[]; colour?: string; top: number }
