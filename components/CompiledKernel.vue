@@ -3,7 +3,7 @@ import { THEMES } from '../composables/themes'
 </script>
 
 <template>
-  <p><code>torch.compile</code> is all you need</p>
+  <p><code>torch.compile</code> 😎</p>
 </template>
 
 <style scoped>

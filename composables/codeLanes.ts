@@ -5,6 +5,7 @@ export type Piece = [text: string, side: Side]
 export type HostSpan = Span & { line: number; state: 'python' | 'wait' }
 export type CopySpan = Span & { kind: 'd2h' | 'h2d' }
 export type KernelSpan = Span & { movesData?: boolean }
+export type LaunchOptions = { movesData?: boolean; caption?: string }
 export type Excerpt = { path: string; code: string }
 export type Source = {
   repo: string
@@ -21,18 +22,19 @@ export type Scene = {
   kernels: KernelSpan[]
   copies: CopySpan[]
   totalUnits: number
+  measuredOn?: string
 }
 
 type Stage = {
   python: (line: number, units: number, label?: string) => void
-  launch: (name: string, units: number, movesData?: boolean) => void
+  launch: (name: string, units: number, options?: LaunchOptions) => void
   d2h: (line: number) => void
   h2d: (line: number, units: number) => void
 }
 
 const D2H_UNITS = 0.4
 
-export const scene = (source: Source, code: Piece[][], script: (stage: Stage) => void): Scene => {
+export const scene = (source: Source, code: Piece[][], script: (stage: Stage) => void, measuredOn?: string): Scene => {
   const host: HostSpan[] = []
   const kernels: KernelSpan[] = []
   const copies: CopySpan[] = []
@@ -49,9 +51,9 @@ export const scene = (source: Source, code: Piece[][], script: (stage: Stage) =>
       host.push({ line, state: 'python', start: hostClock, end: hostClock + units, label })
       hostClock += units
     },
-    launch(name, units, movesData) {
+    launch(name, units, { movesData, caption } = {}) {
       const start = Math.max(hostClock, deviceFreeAt)
-      kernels.push({ label: name, start, end: start + units, movesData })
+      kernels.push({ label: name, start, end: start + units, movesData, caption })
       deviceFreeAt = start + units
     },
     d2h(line) {
@@ -65,5 +67,5 @@ export const scene = (source: Source, code: Piece[][], script: (stage: Stage) =>
     },
   })
 
-  return { source, code, host, kernels, copies, totalUnits: Math.max(hostClock, deviceFreeAt) }
+  return { source, code, host, kernels, copies, totalUnits: Math.max(hostClock, deviceFreeAt), measuredOn }
 }

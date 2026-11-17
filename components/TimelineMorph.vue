@@ -1,9 +1,13 @@
+<script lang="ts">
+export const MORPH_MS = 1600
+</script>
+
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { type Arm, armByTag, decodeRank, microsteps, timeline } from '../composables/timeline'
 import { groupLane, laneGroups, renderLaneLayer, TRACK } from '../composables/timelineLanes'
 
-const props = defineProps<{ step: number }>()
+const props = defineProps<{ step: number; tags: string[] }>()
 
 const WIDTH = 1600
 const LABEL_PX = 96
@@ -16,12 +20,11 @@ const RULER_PX = 32
 const RENDER_SCALE = 3
 const TICK_MS = 250
 const MIN_PHASE_LABEL_PX = 90
-const DURATION_MS = 1600
 const SEGMENTS_PER_MICROSTEP = 3
 
 const lanes = laneGroups.map(groupLane)
 const [forwardPhase, backwardPhase] = Object.values(timeline.phases)
-const runs = ['before', 'after'].map((tag) => {
+const runs = props.tags.map((tag) => {
   const arm = armByTag(tag)
   const steps = microsteps(arm)
   return {
@@ -33,8 +36,8 @@ const runs = ['before', 'after'].map((tag) => {
     ]),
   }
 })
-const [before, after] = runs
-const rankCount = before.arm.ranks.length
+const lastRun = runs.length - 1
+const rankCount = runs[0].arm.ranks.length
 const pxPerMs = (WIDTH - LABEL_PX) / Math.max(...runs.map((run) => run.arm.wall_ms))
 const rankBlock = lanes.length * (LANE_PX + LANE_GAP_PX) - LANE_GAP_PX
 const rankPitch = rankBlock + RANK_GAP_PX
@@ -43,12 +46,16 @@ const lanesHeight = rankCount * rankPitch - RANK_GAP_PX
 const height = lanesTop + lanesHeight + RULER_PX
 
 const canvas = ref<HTMLCanvasElement>()
-const progress = ref(props.step >= 1 ? 1 : 0)
+let progress = Math.min(props.step, lastRun)
 let layers: HTMLCanvasElement[][] = []
 let frame = 0
 
 const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-const mix = (from: number, to: number) => from + (to - from) * progress.value
+const pair = () => {
+  const from = Math.min(Math.floor(progress), lastRun - 1)
+  return { from, to: from + 1, t: progress - from }
+}
+const mix = (from: number, to: number) => from + (to - from) * pair().t
 const xAt = (ms: number) => LABEL_PX + ms * pxPerMs
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2)
 const renderLayers = (arm: Arm) => {
@@ -85,7 +92,8 @@ const draw = () => {
   const ctx = canvas.value!.getContext('2d')!
   ctx.clearRect(0, 0, WIDTH, height)
   ctx.textBaseline = 'middle'
-  const edgesOf = (rank: number) => before.boundaries[rank].map((ms, edge) => mix(ms, after.boundaries[rank][edge]))
+  const { from, to, t } = pair()
+  const edgesOf = (rank: number) => runs[from].boundaries[rank].map((ms, edge) => mix(ms, runs[to].boundaries[rank][edge]))
 
   drawPhases(ctx, edgesOf(0))
   for (let rank = 0; rank < rankCount; rank++) {
@@ -97,9 +105,9 @@ const draw = () => {
       edges.slice(0, -1).forEach((start, segment) => {
         const width = (edges[segment + 1] - start) * pxPerMs
         ctx.globalAlpha = 1
-        drawSegment(ctx, 0, lane, rank, segment, xAt(start), width, top)
-        ctx.globalAlpha = progress.value
-        drawSegment(ctx, 1, lane, rank, segment, xAt(start), width, top)
+        drawSegment(ctx, from, lane, rank, segment, xAt(start), width, top)
+        ctx.globalAlpha = t
+        drawSegment(ctx, to, lane, rank, segment, xAt(start), width, top)
       })
       ctx.globalAlpha = 1
     })
@@ -109,17 +117,17 @@ const draw = () => {
   }
 
   ctx.font = `18px ${token('--mono')}`
-  const wallMs = mix(before.arm.wall_ms, after.arm.wall_ms)
+  const wallMs = mix(runs[from].arm.wall_ms, runs[to].arm.wall_ms)
   for (let ms = 0; ms <= wallMs; ms += TICK_MS) ctx.fillText(String(ms), xAt(ms), lanesTop + lanesHeight + RULER_PX / 2)
 }
 
 const animateTo = (target: number) => {
   cancelAnimationFrame(frame)
-  const from = progress.value
+  const from = progress
   const startedAt = performance.now()
   const tick = (now: number) => {
-    const t = Math.min((now - startedAt) / DURATION_MS, 1)
-    progress.value = from + (target - from) * easeInOut(t)
+    const t = Math.min((now - startedAt) / MORPH_MS, 1)
+    progress = from + (target - from) * easeInOut(t)
     draw()
     if (t < 1) frame = requestAnimationFrame(tick)
   }
@@ -134,25 +142,17 @@ onMounted(() => {
   draw()
   document.fonts.ready.then(draw)
 })
-watch(() => props.step >= 1, (optimized) => animateTo(optimized ? 1 : 0))
+watch(() => Math.min(props.step, lastRun), animateTo)
 onUnmounted(() => cancelAnimationFrame(frame))
 </script>
 
 <template>
-  <TimelineLegend chips>
-    <span class="run">{{ progress < 0.5 ? 'before' : 'after' }}</span>
-  </TimelineLegend>
+  <TimelineLegend chips />
   <canvas ref="canvas" :style="{ width: `${WIDTH}px`, height: `${height}px` }" />
 </template>
 
 <style scoped>
 canvas {
   display: block;
-}
-
-.run {
-  font-family: var(--mono);
-  font-size: 24px;
-  color: var(--muted);
 }
 </style>

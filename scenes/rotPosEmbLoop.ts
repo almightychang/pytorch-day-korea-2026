@@ -1,5 +1,7 @@
 import { scene } from '../composables/codeLanes'
 
+const HOST_US_PER_KERNEL = 24
+
 export default scene(
   {
     repo: 'huggingface/transformers@v4.57.3',
@@ -15,16 +17,17 @@ export default scene(
     [['    col_idx = ', 'host'], ['block_cols[None, :, None, None] * merge_size + intra_col[None, None, None, :]', 'device']],
   ],
   ({ python, launch }) => {
-    const kernel = (line: number, name: string) => {
-      python(line, 1)
-      launch(name, 0.35)
+    const kernel = (line: number, name: string, kernelUs: number) => {
+      python(line, 1, `${HOST_US_PER_KERNEL} µs`)
+      launch(name, 0.35, { caption: `${kernelUs} µs` })
     }
     python(1, 0.5)
-    kernel(2, 'arange')
-    kernel(3, 'arange')
-    kernel(4, 'mul')
-    kernel(4, 'add')
-    kernel(5, 'mul')
-    kernel(5, 'add')
+    kernel(2, 'arange', 0.7)
+    kernel(3, 'arange', 0.7)
+    kernel(4, 'mul', 0.9)
+    kernel(4, 'add', 1)
+    kernel(5, 'mul', 0.9)
+    kernel(5, 'add', 1)
   },
+  'H200 · eager',
 )

@@ -3,52 +3,36 @@ import { THEMES } from '../composables/themes'
 
 const FIXED = 256
 const PER_BATCH = [196, 256, 225, 144]
+const RECOMPILE_LIMIT = 8
 const CASES = [
-  { title: 'dynamic', values: PER_BATCH },
-  { title: 'static', values: PER_BATCH.map(() => FIXED) },
+  {
+    title: 'shapes vary',
+    calls: PER_BATCH.map((size, call) => ({ size, hit: false, result: call === 0 ? 'compile' : 'recompile' })),
+    ending: `… after ${RECOMPILE_LIMIT} → eager`,
+  },
+  {
+    title: 'shapes fixed',
+    calls: PER_BATCH.map((_, call) => ({ size: FIXED, hit: call > 0, result: call === 0 ? 'compile' : 'reuse' })),
+    ending: 'one kernel, every call',
+  },
 ]
-
-const BAR_PX_PER_UNIT = 1
-const MADE_STATIC = [
-  { name: 'max_seqlen', from: 'per-batch maximum', to: 'config value' },
-  { name: 'tensor stride', from: 'view of a larger tensor', to: 'contiguous' },
-]
-
-const compiles = (values: number[]) =>
-  values.reduce<{ from: number; rows: number }[]>((runs, value, row) => {
-    const last = runs.at(-1)
-    if (last && values[last.from] === value) last.rows += 1
-    else runs.push({ from: row, rows: 1 })
-    return runs
-  }, [])
 </script>
 
 <template>
   <div class="fixed-shapes">
     <section v-for="example in CASES" :key="example.title">
       <h3>{{ example.title }}</h3>
-      <div class="flow">
-        <template v-for="(value, row) in example.values" :key="row">
-          <span class="shape" :style="{ gridRow: row + 1 }">
-            <em :style="{ width: `${value * BAR_PX_PER_UNIT}px` }" />{{ value }}
-          </span>
-          <i :style="{ gridRow: row + 1 }" />
-        </template>
-        <b v-for="run in compiles(example.values)" :key="run.from" :style="{ gridRow: `${run.from + 1} / span ${run.rows}` }">
-          compile
-        </b>
+      <div v-for="(call, index) in example.calls" :key="index" class="call">
+        <span class="shape"><em :style="{ width: `${call.size}px` }" />{{ call.size }}</span>
+        <span class="arrow">→</span>
+        <span class="guard" :class="{ hit: call.hit, miss: index > 0 && !call.hit }">guard</span>
+        <span class="arrow">→</span>
+        <b :class="{ reuse: call.hit }">{{ call.result }}</b>
       </div>
+      <p class="ending">{{ example.ending }}</p>
     </section>
   </div>
-  <p class="foot">
-    <dl>
-      <div v-for="variable in MADE_STATIC" :key="variable.name">
-        <dt>{{ variable.name }}</dt>
-        <dd>{{ variable.from }} → {{ variable.to }}</dd>
-      </div>
-    </dl>
-    <IllustrativeBadge />
-  </p>
+  <IllustrativeBadge class="badge" />
 </template>
 
 <style scoped>
@@ -56,96 +40,80 @@ const compiles = (values: number[]) =>
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 120px;
-  margin-top: 56px;
+  margin-top: 40px;
 }
 
 h3 {
   margin: 0 0 24px;
   font-family: var(--mono);
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 400;
   color: var(--muted);
 }
 
-.flow {
+.call {
   display: grid;
-  grid-template-columns: 330px 1fr 200px;
-  grid-auto-rows: 72px;
+  grid-template-columns: 330px auto auto auto 1fr;
   align-items: center;
-  row-gap: 16px;
-}
-
-.shape {
-  grid-column: 1;
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  gap: 20px;
+  height: 64px;
+  margin-bottom: 12px;
   font-family: var(--mono);
   font-size: 22px;
   color: var(--muted);
 }
 
+.shape {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 em {
-  height: 44px;
+  height: 40px;
   border-radius: 4px;
   background: #8a90a0;
 }
 
-i {
-  grid-column: 2;
-  position: relative;
-  margin: 0 24px;
-  border-top: 3px solid var(--muted);
+.arrow {
+  font-size: 28px;
 }
 
-i::after {
-  content: '';
-  position: absolute;
-  right: -2px;
-  top: -9px;
-  border: 8px solid transparent;
-  border-left: 14px solid var(--muted);
-  border-right: 0;
+.guard {
+  padding: 6px 14px;
+  border: 2px solid #8a90a066;
+  border-radius: 8px;
+}
+
+.guard.hit {
+  border-color: var(--compute);
+  color: var(--compute);
+}
+
+.guard.miss {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 b {
-  grid-column: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  border-radius: 10px;
-  background: color-mix(in srgb, v-bind('THEMES.kernel.colour') 30%, transparent);
-  font-size: 26px;
   font-weight: 600;
-}
-
-.foot {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin: 48px 0 0;
-  font-size: 22px;
-  color: var(--muted);
-}
-
-dl {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-}
-
-dl div {
-  display: flex;
-}
-
-dt {
-  width: 220px;
-  font-family: var(--mono);
   color: var(--text);
 }
 
-dd {
-  margin: 0;
+b.reuse {
+  color: color-mix(in srgb, v-bind('THEMES.kernel.colour') 80%, var(--text));
+}
+
+.ending {
+  margin: 20px 0 0;
+  font-family: var(--mono);
+  font-size: 24px;
+  color: var(--text);
+}
+
+.badge {
+  display: block;
+  width: fit-content;
+  margin: 48px 0 0 auto;
 }
 </style>

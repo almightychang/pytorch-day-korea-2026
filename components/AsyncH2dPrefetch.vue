@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { solid, type LegendItem, type Row } from '../composables/lanes'
+import { LANE_LABEL_WIDTH, LANE_WIDTH, solid, type LegendItem, type Row } from '../composables/lanes'
 import { THEMES } from '../composables/themes'
 
 const MICROSTEP_UNITS = 4
@@ -24,11 +24,17 @@ const rows: Row[] = [
     ),
   },
 ]
+const pxPerUnit = LANE_WIDTH / (2 * MICROSTEP_UNITS)
+const overlap = {
+  left: `${LANE_LABEL_WIDTH + planStart * pxPerUnit}px`,
+  width: `${(MICROSTEP_UNITS - planStart) * pxPerUnit}px`,
+}
 const legend: LegendItem[] = [RUNNING, NEXT].map((batch) => ({ label: `micro-batch ${batch.name}`, fill: batch.fill }))
 </script>
 
 <template>
   <div class="prefetch">
+    <div class="overlap" :style="overlap"><span>overlapped</span></div>
     <LaneChart :rows="rows" :total-units="2 * MICROSTEP_UNITS" />
     <LaneLegend :items="legend" />
   </div>
@@ -36,6 +42,26 @@ const legend: LegendItem[] = [RUNNING, NEXT].map((batch) => ({ label: `micro-bat
 
 <style scoped>
 .prefetch {
-  margin-top: 150px;
+  margin-top: 110px;
+}
+
+.overlap {
+  position: relative;
+  height: 20px;
+  margin-bottom: 20px;
+  border: 3px solid var(--muted);
+  border-bottom: none;
+}
+
+.overlap span {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  padding-bottom: 12px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 24px;
+  color: var(--muted);
 }
 </style>

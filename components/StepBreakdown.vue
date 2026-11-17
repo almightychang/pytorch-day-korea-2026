@@ -1,45 +1,35 @@
 <script setup lang="ts">
+import { BASELINE_STEP_MS as step, type BucketKey, BUCKETS, stepTotal } from '../composables/stepBuckets'
+
 defineProps<{ bracket?: boolean }>()
-
-type Segment = { label: string; ms: number; color: string }
-
-const COMPUTE: Segment = { label: 'Compute', ms: 1348.9, color: 'var(--compute)' }
-const COPIES: Segment = { label: 'Copy', ms: 70.5, color: 'var(--other)' }
-
-const SEGMENTS: Segment[] = [
-  COMPUTE,
-  { label: 'No kernel', ms: 854.0, color: 'var(--python)' },
-  { label: 'NCCL', ms: 616.0, color: 'var(--wait)' },
-  COPIES,
-]
 
 const MIN_LABELED_MS = 400
 
-const total = SEGMENTS.reduce((sum, s) => sum + s.ms, 0)
-const share = (s: Segment) => Math.round((s.ms / total) * 100)
-const computeShare = (COMPUTE.ms / total) * 100
+const total = stepTotal(step)
+const share = (key: BucketKey) => Math.round((step[key] / total) * 100)
+const computeShare = (step.compute / total) * 100
 </script>
 
 <template>
   <div v-if="bracket" class="bracket" :style="{ marginLeft: `${computeShare}%` }">
-    {{ 100 - share(COMPUTE) }}% WASTED
+    {{ 100 - share('compute') }}% WASTED
   </div>
-  <div class="scale">1 step</div>
+  <div class="scale">RLDX-1.0 · 1 step</div>
   <div class="bar">
     <div
-      v-for="s in SEGMENTS"
-      :key="s.label"
+      v-for="bucket in BUCKETS"
+      :key="bucket.key"
       class="segment"
-      :class="{ waiting: s !== COMPUTE }"
-      :style="{ flex: s.ms, '--tone': s.color }"
+      :class="{ waiting: bucket.key !== 'compute' }"
+      :style="{ flex: step[bucket.key], '--tone': bucket.colour }"
     >
-      <template v-if="s.ms >= MIN_LABELED_MS">{{ share(s) }}%</template>
+      <template v-if="step[bucket.key] >= MIN_LABELED_MS">{{ share(bucket.key) }}%</template>
     </div>
   </div>
   <div class="legend">
-    <div v-for="s in SEGMENTS" :key="s.label" class="entry">
-      <i :style="{ background: s.color }" />
-      <span class="label">{{ s.label }}</span>
+    <div v-for="bucket in BUCKETS" :key="bucket.key" class="entry">
+      <i :style="{ background: bucket.colour }" />
+      <span class="label">{{ bucket.label }}</span>
     </div>
   </div>
 </template>

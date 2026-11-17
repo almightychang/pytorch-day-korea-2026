@@ -5,7 +5,7 @@ const DEVICES: { name: string; runs: Run[] }[] = [
   {
     name: 'RTX 5090',
     runs: [
-      { name: 'RLDX-1', value: 75.1, tone: 'muted' },
+      { name: 'RLDX-1.0', value: 75.1, tone: 'muted' },
       { name: 'RLDX-1.1', value: 42.4 },
       { name: '+ quantization', value: 20.2 },
     ],
@@ -13,7 +13,7 @@ const DEVICES: { name: string; runs: Run[] }[] = [
   {
     name: 'Jetson Thor',
     runs: [
-      { name: 'RLDX-1', note: 'not supported' },
+      { name: 'RLDX-1.0', note: 'not supported' },
       { name: 'RLDX-1.1', value: 155.9 },
       { name: '+ quantization', value: 86.1 },
     ],

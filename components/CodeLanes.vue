@@ -5,7 +5,7 @@ import { sceneLegend, sceneRows } from '../composables/sceneLanes'
 import { scenes, type SceneName } from '../scenes'
 
 const props = defineProps<{ scene: SceneName }>()
-const { source, code, host, kernels, copies, totalUnits } = scenes[props.scene]
+const { source, code, host, kernels, copies, totalUnits, measuredOn } = scenes[props.scene]
 
 const MS_PER_UNIT = 260
 const rows = sceneRows({ host, kernels, copies })
@@ -36,5 +36,5 @@ onUnmounted(() => cancelAnimationFrame(frame))
 <template>
   <CodeSnippet :source="source" :code="code" :current-line="currentLine" :finished="finished" />
   <LaneChart :rows="rows" :total-units="totalUnits" :shown-units="now" />
-  <LaneLegend :items="legend" />
+  <LaneLegend :items="legend" :measured-on="measuredOn" />
 </template>

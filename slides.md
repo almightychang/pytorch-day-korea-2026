@@ -194,24 +194,6 @@ eyebrow: Analysis
 
 ---
 layout: content
-eyebrow: Kernel · CPU-bound
----
-
-# 2D RoPE: small kernels
-
-<CodeLanes scene="rotPosEmbLoop" />
-
----
-layout: content
-eyebrow: Kernel · Memory-bound
----
-
-# RMSNorm: intermediate tensors
-
-<CodeLanes scene="rmsNorm" />
-
----
-layout: content
 eyebrow: Kernel
 ---
 
@@ -236,6 +218,24 @@ eyebrow: Kernel · CPU-bound
 # Small kernels expose launch overhead
 
 <LaunchOverhead />
+
+---
+layout: content
+eyebrow: Kernel · CPU-bound
+---
+
+# 2D RoPE: small kernels
+
+<CodeLanes scene="rotPosEmbLoop" />
+
+---
+layout: content
+eyebrow: Kernel · Memory-bound
+---
+
+# RMSNorm: intermediate tensors
+
+<CodeLanes scene="rmsNorm" />
 
 ---
 layout: content
@@ -272,6 +272,15 @@ eyebrow: Analysis
 # Rank skew
 
 <WorstMicrostep :highlight="['nccl']" />
+
+---
+layout: content
+eyebrow: Rank skew · Pretraining
+---
+
+# ZeRO-2
+
+<ZeroStages />
 
 ---
 layout: content
@@ -346,6 +355,16 @@ eyebrow: Architecture · Host vs Device
 ---
 layout: content
 eyebrow: Architecture · Rank skew
+clicks: 1
+---
+
+# Batch Routing
+
+<BatchRouting :step="$clicks" />
+
+---
+layout: content
+eyebrow: Architecture · Rank skew
 ---
 
 # Cost function
@@ -354,13 +373,23 @@ eyebrow: Architecture · Rank skew
 
 ---
 layout: content
-eyebrow: Architecture · Rank skew
-clicks: 1
+eyebrow: Architecture · Kernel
 ---
 
-# Batch Routing
+# Free Lunch
 
-<BatchRouting :step="$clicks" />
+<CompiledKernel />
+
+---
+layout: content
+eyebrow: Architecture · Kernel
+---
+
+# How torch.compile works
+
+<CompileFlow focus="Dynamo" />
+
+<SourceNote site="pytorchDocs" title="Dynamo Core Concepts" href="https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/compile/programming_model.dynamo_core_concepts.html" />
 
 ---
 layout: content
@@ -376,9 +405,20 @@ layout: content
 eyebrow: Architecture · Kernel
 ---
 
-# Kernel Compilation
+# How torch.compile works
 
-<CompiledKernel />
+<CompileFlow focus="Inductor" />
+
+<SourceNote site="pytorchDocs" title="Dynamo Core Concepts" href="https://docs.pytorch.org/docs/stable/user_guide/torch_compiler/compile/programming_model.dynamo_core_concepts.html" />
+
+---
+layout: content
+eyebrow: Architecture · Kernel
+---
+
+# Compile region
+
+<CompileRegion />
 
 ---
 layout: section
@@ -398,11 +438,11 @@ eyebrow: Throughput
 
 ---
 layout: content
-eyebrow: Profile · Before → After
-clicks: 1
+eyebrow: Profile · By stage
+clicks: 3
 ---
 
-<TimelineMorph :step="$clicks" />
+<StageMorph :step="$clicks" />
 
 ---
 layout: content
@@ -499,6 +539,30 @@ eyebrow: Behind the scenes
   margin: 36px 0 0;
   font-size: 24px;
   color: var(--muted);
+}
+</style>
+
+---
+layout: cover
+---
+
+<div class="hiring">
+  <QrCode href="https://www.rlwrld.ai/careers" logo="/rlwrld-logo.png" />
+  <h1>We’re hiring</h1>
+</div>
+
+<style>
+.hiring {
+  --qr-ink: #23b399;
+  display: grid;
+  grid-template-columns: 560px auto;
+  justify-content: start;
+  align-items: center;
+  gap: 96px;
+}
+
+.hiring h1 {
+  margin: 0;
 }
 </style>
 

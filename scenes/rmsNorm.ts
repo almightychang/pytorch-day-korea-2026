@@ -1,6 +1,9 @@
 import { scene } from '../composables/codeLanes'
 
 const MOVES_DATA = true
+const HOST_US_PER_KERNEL = 13
+const LABELLED_US = 10
+const THIN_UNITS = 0.08
 
 export default scene(
   {
@@ -17,18 +20,20 @@ export default scene(
     [['return ', 'host'], ['self.weight * hidden_states.to(input_dtype)', 'device']],
   ],
   ({ python, launch }) => {
-    const kernel = (line: number, name: string, movesData = false) => {
-      python(line, 0.45)
-      launch(name, 1, movesData)
+    const kernel = (line: number, name: string, kernelUs: number, movesData = false) => {
+      python(line, 0.45, `${HOST_US_PER_KERNEL} µs`)
+      if (kernelUs < LABELLED_US) launch('', THIN_UNITS)
+      else launch(name, 1, { movesData, caption: `${kernelUs} µs` })
     }
     python(1, 0.3)
-    kernel(2, 'cast', MOVES_DATA)
-    kernel(3, 'pow')
-    kernel(3, 'mean')
-    kernel(4, 'add')
-    kernel(4, 'rsqrt')
-    kernel(4, 'mul')
-    kernel(5, 'cast', MOVES_DATA)
-    kernel(5, 'mul')
+    kernel(2, 'cast', 120, MOVES_DATA)
+    kernel(3, 'pow', 66)
+    kernel(3, 'mean', 40)
+    kernel(4, 'add', 1)
+    kernel(4, 'rsqrt', 1)
+    kernel(4, 'mul', 102)
+    kernel(5, 'cast', 48, MOVES_DATA)
+    kernel(5, 'mul', 86)
   },
+  'H200 · eager',
 )

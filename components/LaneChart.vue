@@ -13,8 +13,10 @@ const props = defineProps<{
 const LANE_HEIGHT = 48
 const LANE_GAP = props.handoffs ? (props.handoffGap ?? 56) : 8
 const ARROW_HEAD = 10
+const CAPTION_HEIGHT = 40
 const pxPerUnit = LANE_WIDTH / props.totalUnits
-const height = props.rows.length * (LANE_HEIGHT + LANE_GAP) - LANE_GAP
+const hasCaptions = props.rows.some((row) => row.bars.some((bar) => bar.caption))
+const height = props.rows.length * (LANE_HEIGHT + LANE_GAP) - LANE_GAP + (hasCaptions ? CAPTION_HEIGHT : 0)
 
 const top = (row: number) => `${row * (LANE_HEIGHT + LANE_GAP)}px`
 const revealed = computed(() => `inset(0 ${LANE_WIDTH - (props.shownUnits ?? props.totalUnits) * pxPerUnit}px 0 0)`)
@@ -45,6 +47,14 @@ const box = (bar: Bar, row: number) => ({
       <template v-for="(row, i) in rows" :key="row.name">
         <div v-for="(bar, j) in row.bars" :key="j" class="bar" :class="bar.look" :style="box(bar, i)">
           {{ bar.label }}
+        </div>
+        <div
+          v-for="(bar, j) in row.bars.filter((bar) => bar.caption)"
+          :key="`caption-${j}`"
+          class="caption"
+          :style="{ top: `calc(${top(i)} + ${LANE_HEIGHT}px)`, left: `${(bar.start + bar.end) / 2 * pxPerUnit}px` }"
+        >
+          {{ bar.caption }}
         </div>
       </template>
       <svg v-if="handoffs" class="handoffs" :width="LANE_WIDTH" :height="height">
@@ -113,6 +123,16 @@ const box = (bar: Bar, row: number) => ({
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.caption {
+  position: absolute;
+  padding-top: 8px;
+  transform: translateX(-50%);
   white-space: nowrap;
   font-family: var(--mono);
   font-size: 18px;

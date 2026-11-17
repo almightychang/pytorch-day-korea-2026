@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LegendItem } from '../composables/lanes'
 
-defineProps<{ items: LegendItem[] }>()
+defineProps<{ items: LegendItem[]; measuredOn?: string }>()
 </script>
 
 <template>
@@ -9,7 +9,8 @@ defineProps<{ items: LegendItem[] }>()
     <span v-for="item in items" :key="item.label">
       <i :class="{ hatched: !item.fill }" :style="{ background: item.fill }" />{{ item.label }}
     </span>
-    <IllustrativeBadge class="badge" />
+    <span v-if="measuredOn" class="badge measured">{{ measuredOn }}</span>
+    <IllustrativeBadge v-else class="badge" />
   </div>
 </template>
 
@@ -41,5 +42,14 @@ defineProps<{ items: LegendItem[] }>()
 
 .legend .badge {
   margin-left: auto;
+}
+
+.measured {
+  padding: 4px 16px;
+  border: 2px solid #8a90a066;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 600;
 }
 </style>

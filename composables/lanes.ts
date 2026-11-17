@@ -1,4 +1,4 @@
-export type Span = { start: number; end: number; label?: string }
+export type Span = { start: number; end: number; label?: string; caption?: string }
 export type Bar = Span & { look: 'solid' | 'waiting' | 'idle'; fill?: string }
 export type Row = { name: string; bars: Bar[] }
 export type LegendItem = { label: string; fill?: string }
