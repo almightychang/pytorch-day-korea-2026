@@ -9,7 +9,13 @@ const STAGES: { name: StageName; role: string; example: Line[] }[] = [
   {
     name: 'Dynamo',
     role: 'capture graph + guards',
-    example: [{ text: 'x.shape == (256, 4096)' }, { text: 'x.stride() == (4096, 1)' }],
+    example: [
+      { text: 'x.shape    == (256, 4096)' },
+      { text: 'x.stride() == (4096, 1)' },
+      { text: 'x.dtype    == bfloat16' },
+      { text: 'x.device   == cuda:0' },
+      { text: 'eps        == 1e-6' },
+    ],
   },
   {
     name: 'AOTAutograd',
@@ -94,6 +100,7 @@ ul {
   list-style: none;
   font-family: var(--mono);
   font-variant-ligatures: none;
+  white-space: pre;
   font-size: 22px;
   line-height: 1.7;
   color: var(--muted);
