@@ -6,6 +6,8 @@ canvasWidth: 1920
 aspectRatio: 16/9
 transition: fade
 layout: cover
+duration: 30min
+timer: countdown
 ---
 
 # 오픈소스 Physical AI 모델은<br>더 빠르게 훈련할 수 있다
