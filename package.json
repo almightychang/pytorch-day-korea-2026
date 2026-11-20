@@ -2,6 +2,7 @@
   "name": "pytorch-day-korea-2026",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "slidev --open",
     "build": "slidev build",

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useIsSlideActive } from '@slidev/client'
 import { onMounted, ref, watch } from 'vue'
+import { publicAsset } from '../composables/publicAsset'
 
 defineProps<{ src: string; source: string }>()
 
@@ -20,7 +21,7 @@ watch(isActive, sync)
 
 <template>
   <div class="stage">
-    <video ref="video" :src="src" muted loop playsinline />
+    <video ref="video" :src="publicAsset(src)" muted loop playsinline />
     <a class="source" :href="source" target="_blank">{{ source.replace(/^https?:\/\//, '') }}</a>
   </div>
 </template>

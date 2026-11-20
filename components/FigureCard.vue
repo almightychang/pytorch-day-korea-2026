@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { publicAsset } from '../composables/publicAsset'
+
 defineProps<{ src: string; caption?: string; padded?: boolean }>()
 </script>
 
 <template>
   <figure>
     <figcaption v-if="caption">{{ caption }}</figcaption>
-    <img :src="src" :class="{ padded }" />
+    <img :src="publicAsset(src)" :class="{ padded }" />
   </figure>
 </template>
 

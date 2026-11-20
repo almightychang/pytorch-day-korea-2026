@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import QRCode from 'qrcode'
+import { publicAsset } from '../composables/publicAsset'
 
 const props = defineProps<{ href: string; logo?: string }>()
 
 const { modules } = QRCode.create(props.href, { errorCorrectionLevel: props.logo ? 'H' : 'M' })
+const logoUrl = props.logo && publicAsset(props.logo)
 const cells = Array.from(modules.data, (dark, index) =>
   dark ? `M${index % modules.size} ${Math.floor(index / modules.size)}h1v1h-1z` : '',
 ).join('')
@@ -13,7 +15,7 @@ const cells = Array.from(modules.data, (dark, index) =>
   <a class="qr-code" :href="href" target="_blank">
     <svg :viewBox="`0 0 ${modules.size} ${modules.size}`" shape-rendering="crispEdges"><path :d="cells" /></svg>
     <span v-if="logo" class="logo">
-      <span class="mark" :style="{ '--mark': `url(${logo})` }"><img :src="logo" alt=""></span>
+      <span class="mark" :style="{ '--mark': `url(${logoUrl})` }"><img :src="logoUrl" alt=""></span>
     </span>
   </a>
 </template>
