@@ -92,6 +92,15 @@ layout: content
 eyebrow: Root Cause
 ---
 
+# Read the docs 🙏
+
+<GuideBook site="pytorchDocs" title="Performance Tuning Guide" href="https://docs.pytorch.org/tutorials/recipes/recipes/tuning_guide.html" />
+
+---
+layout: content
+eyebrow: Root Cause
+---
+
 # Profiling
 
 <div class="tools">
@@ -541,6 +550,103 @@ eyebrow: Behind the scenes
   margin: 36px 0 0;
   font-size: 24px;
   color: var(--muted);
+}
+</style>
+
+---
+layout: section
+section: '9'
+---
+
+# Culture
+
+---
+layout: content
+eyebrow: Culture
+---
+
+<div class="ousterhout">
+  <img src="/philosophy-of-software-design.jpg" alt="A Philosophy of Software Design">
+  <blockquote>
+    <p>Clean design and high performance<br>are compatible.</p>
+    <p>If you write clean, simple code, your system will probably be fast enough that you don’t have to worry much about performance in the first place.</p>
+    <cite>John Ousterhout · A Philosophy of Software Design</cite>
+  </blockquote>
+</div>
+
+<style>
+.ousterhout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  align-items: center;
+  gap: 88px;
+  margin-top: 96px;
+}
+
+.ousterhout img {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.ousterhout blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+.ousterhout p {
+  margin: 0 0 36px;
+  font-size: 38px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.ousterhout p:first-child {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.ousterhout cite {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-style: normal;
+  color: var(--muted);
+}
+</style>
+
+---
+layout: content
+eyebrow: Culture
+---
+
+# Faster Models, Faster Team
+
+<RunBars class="speedups" :runs="[
+  { name: 'GR00T N1.7 · training', value: 557 / 191.6 },
+  { name: 'RLDX-1.1 · training', value: 2.27 },
+  { name: 'Cosmos WAM · training', value: 1.8 },
+  { name: 'RLDX-1.1 · inference', value: 75.1 / 42.4 },
+]" unit="×" :px-per-unit="300" :digits="1" />
+
+<p v-click class="boom">BOOM 🔥🔥</p>
+
+<style>
+.speedups {
+  margin-top: 96px;
+}
+
+.boom {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-size: 140px;
+  font-weight: 800;
+  color: var(--accent);
+  rotate: -8deg;
 }
 </style>
 
